@@ -1,0 +1,118 @@
+.product-alter-container {
+  max-width: 600px;
+  margin: 25px;
+  padding: 20px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+  h2 {
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 1.5rem;
+  }
+
+  .alter-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+
+      label {
+        font-weight: bold;
+      }
+
+      input {
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        box-sizing: border-box;
+
+        &:focus {
+          outline: none;
+          border-color: #007bff;
+          box-shadow: 0 0 4px rgba(0, 123, 255, 0.3);
+        }
+      }
+    }
+
+    .adjust-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      justify-content: center;
+
+      .positive-buttons,
+      .negative-buttons {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+      }
+
+      .negative-buttons {
+        margin-top: 10px;
+
+        button {
+          background-color: #d9534f;
+          color: white;
+
+          &:hover {
+            background-color: #c9302c;
+          }
+        }
+      }
+
+      button {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 4px;
+        background-color: #007bff;
+        color: #fff;
+        cursor: pointer;
+        transition: background-color 0.3s;
+
+        &:hover {
+          background-color: #0056b3;
+        }
+
+        &:focus {
+          outline: none;
+        }
+      }
+    }
+
+    .form-buttons {
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+
+      .cancel-button {
+        background-color: #d9534f;
+      }
+
+      button {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 4px;
+        background-color: #007bff;
+        color: #fff;
+        cursor: pointer;
+        transition: background-color 0.3s;
+
+        &:disabled {
+          background-color: #6c757d;
+          cursor: not-allowed;
+        }
+
+        &:hover:not(:disabled) {
+          background-color: #0056b3;
+        }
+      }
+    }
+  }
+}

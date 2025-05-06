@@ -1,0 +1,357 @@
+$breakpoints: (
+  sm: 576px,
+  md: 768px,
+  lg: 992px,
+  xl: 1200px
+);
+
+$colors: (
+  primary: (
+    base: #4a90e2,
+    light: #6ba5e7,
+    dark: #357abd,
+    contrast: #fff
+  ),
+  secondary: (
+    base: #f5f7fa,
+    light: #fff,
+    dark: #e1e5ea,
+    contrast: #333
+  ),
+  status: (
+    success: #4caf50,
+    warning: #ffc107,
+    error: #ff5252,
+    info: #2196f3
+  ),
+  neutral: (
+    white: #fff,
+    gray-light: #f5f5f5,
+    gray: #ddd,
+    gray-dark: #888,
+    black: #333
+  )
+);
+
+$typography: (
+  font-family: ('Roboto', sans-serif),
+  sizes: (
+    xs: 0.75rem,
+    sm: 0.875rem,
+    base: 1rem,
+    md: 1.125rem,
+    lg: 1.25rem,
+    xl: 1.5rem
+  ),
+  weights: (
+    light: 300,
+    regular: 400,
+    medium: 500,
+    bold: 700
+  ),
+  line-heights: (
+    tight: 1.2,
+    base: 1.5,
+    relaxed: 1.75
+  )
+);
+
+$spacing: (
+  xs: 0.25rem,
+  sm: 0.5rem,
+  md: 1rem,
+  lg: 1.5rem,
+  xl: 2rem
+);
+
+@mixin flex($direction: row, $justify: flex-start, $align: stretch, $gap: 0) {
+  display: flex;
+  flex-direction: $direction;
+  justify-content: $justify;
+  align-items: $align;
+  gap: map-get($spacing, $gap);
+}
+
+@mixin button-variant($variant: 'primary', $size: 'md') {
+  $bg-color: map-get(map-get($colors, $variant), 'base');
+  $color: map-get(map-get($colors, $variant), 'contrast');
+
+  background-color: $bg-color;
+  color: $color;
+  border: none;
+  border-radius: 4px;
+  padding: map-get($spacing, sm) map-get($spacing, md);
+  font-size: map-get(map-get($typography, sizes), base);
+  font-weight: map-get(map-get($typography, weights), medium);
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+
+  &:hover {
+    background-color: map-get(map-get($colors, $variant), 'dark');
+    transform: translateY(-1px);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+
+  @if $size == 'sm' {
+    padding: map-get($spacing, xs) map-get($spacing, sm);
+    font-size: map-get(map-get($typography, sizes), sm);
+  } @else if $size == 'lg' {
+    padding: map-get($spacing, md) map-get($spacing, lg);
+    font-size: map-get(map-get($typography, sizes), lg);
+  }
+}
+
+@mixin input-base {
+  width: 100%;
+  padding: map-get($spacing, sm);
+  border: 1px solid map-get(map-get($colors, neutral), gray);
+  border-radius: 4px;
+  font-size: map-get(map-get($typography, sizes), base);
+  transition: border-color 0.2s ease-in-out;
+
+  &:focus {
+    outline: none;
+    border-color: map-get(map-get($colors, primary), base);
+    box-shadow: 0 0 0 2px rgba(map-get(map-get($colors, primary), base), 0.1);
+  }
+
+  &::placeholder {
+    color: map-get(map-get($colors, neutral), gray-dark);
+  }
+}
+
+#content {
+  padding: map-get($spacing, lg);
+  background-color: map-get(map-get($colors, secondary), base);
+  color: map-get(map-get($colors, neutral), black);
+
+  .search-container {
+    @include flex(column, flex-start, stretch, md);
+    background-color: map-get(map-get($colors, secondary), light);
+    padding: map-get($spacing, lg);
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+    h3 {
+      font-size: map-get(map-get($typography, sizes), lg);
+      color: map-get(map-get($colors, primary), dark);
+      margin-bottom: map-get($spacing, md);
+    }
+
+    .filter-group {
+      @include flex(row, flex-start, center, sm);
+      flex-wrap: wrap;
+
+      label {
+        font-weight: map-get(map-get($typography, weights), medium);
+        min-width: 100px;
+      }
+
+      .search-select,
+      .search-input {
+        @include input-base;
+      }
+
+      .search-input {
+        flex: 1;
+        min-width: 200px;
+      }
+
+      .remove-filter-button {
+        @include button-variant('status', 'sm');
+        background-color: map-get(map-get($colors, status), error);
+      }
+    }
+
+    .add-filter-button {
+      @include button-variant('primary', 'sm');
+      align-self: flex-start;
+    }
+  }
+
+  .accessibility-buttons,
+  .toggle-visibility-button {
+    @include flex(row, center, center, sm);
+
+    button {
+      @include button-variant('primary', 'sm');
+      margin-right: map-get($spacing, sm);
+    }
+  }
+
+  .sort-container,
+  .field-selection {
+    @include flex(column, flex-start, stretch, sm);
+    margin-top: map-get($spacing, md);
+
+    .styled-select {
+      @include input-base;
+      margin-bottom: map-get($spacing, sm);
+    }
+  }
+
+  .product-list {
+    list-style: none;
+    padding: 0;
+    margin: map-get($spacing, lg) 0;
+
+    .product-item {
+      background-color: map-get(map-get($colors, neutral), white);
+      border: 1px solid map-get(map-get($colors, neutral), gray);
+      border-radius: 8px;
+      padding: map-get($spacing, lg);
+      margin-bottom: map-get($spacing, md);
+      transition: transform 0.2s ease-in-out;
+
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+
+      h3 {
+        font-size: map-get(map-get($typography, sizes), lg);
+        color: map-get(map-get($colors, primary), base);
+        margin-bottom: map-get($spacing, md);
+      }
+
+      .action-buttons {
+        @include flex(row, flex-start, center, sm);
+        margin-top: map-get($spacing, md);
+
+        button {
+          &.edit-button {
+            @include button-variant('status', 'sm');
+            background-color: map-get(map-get($colors, status), success);
+          }
+
+          &.delete-button {
+            @include button-variant('status', 'sm');
+            background-color: map-get(map-get($colors, status), error);
+          }
+        }
+      }
+    }
+  }
+
+  .pagination {
+    @include flex(row, center, center, sm);
+    margin-top: map-get($spacing, xl);
+
+    button {
+      @include button-variant('primary', 'sm');
+      min-width: 40px;
+      height: 40px;
+
+      &.active {
+        background-color: map-get(map-get($colors, primary), dark);
+        font-weight: map-get(map-get($typography, weights), bold);
+      }
+    }
+  }
+}
+
+.selection-container {
+  border: 1px solid map-get(map-get($colors, neutral), gray);
+  padding: map-get($spacing, md);
+  border-radius: 8px;
+  margin-top: map-get($spacing, sm);
+  background-color: map-get(map-get($colors, secondary), light);
+  @include flex(column, flex-start, stretch, md);
+}
+
+.toggle-visibility-button {
+  @include button-variant('primary', 'md');
+  transition: background-color 0.3s ease, transform 0.2s ease;
+
+  &:hover {
+    background-color: map-get(map-get($colors, primary), dark);
+    transform: translateY(-2px);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+
+  &.active {
+    background-color: map-get(map-get($colors, status), success);
+  }
+}
+
+.sort-container {
+  @include flex(row, flex-start, center, sm);
+
+  label {
+    font-weight: map-get(map-get($typography, weights), medium);
+    color: map-get(map-get($colors, neutral), black);
+  }
+
+  .styled-select {
+    @include input-base;
+  }
+
+  .sort-direction-button {
+    @include button-variant('status', 'sm');
+    background-color: map-get(map-get($colors, status), success);
+  }
+}
+
+.field-selection {
+  @include flex(column, flex-start, stretch, sm);
+
+  .toggle-fields-button {
+    @include button-variant('status', 'sm');
+    background-color: map-get(map-get($colors, status), warning);
+    color: map-get(map-get($colors, neutral), black);
+  }
+
+  .field-checkbox {
+    @include flex(row, flex-start, center, sm);
+
+    input[type="checkbox"] {
+      cursor: pointer;
+      width: 1rem;
+      height: 1rem;
+
+      &:checked {
+        background-color: map-get(map-get($colors, primary), base);
+        border-color: map-get(map-get($colors, primary), base);
+      }
+    }
+
+    label {
+      font-size: map-get(map-get($typography, sizes), base);
+      color: map-get(map-get($colors, neutral), black);
+      cursor: pointer;
+    }
+  }
+}
+
+@each $breakpoint, $value in $breakpoints {
+  @media (max-width: $value) {
+    #content {
+      padding: map-get($spacing, md);
+
+      .filter-group {
+        flex-direction: column;
+        align-items: stretch;
+
+        label {
+          margin-bottom: map-get($spacing, xs);
+        }
+
+        .search-input,
+        .search-select {
+          width: 100%;
+          margin-bottom: map-get($spacing, xs);
+        }
+      }
+
+      .product-item {
+        padding: map-get($spacing, md);
+      }
+    }
+  }
+}

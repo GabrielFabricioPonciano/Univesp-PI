@@ -1,0 +1,137 @@
+<app-toolbar
+  (toggleSearchEvent)="onToggleSearch()"
+  (openAddDialogEvent)="openAddDialog()">
+</app-toolbar>
+
+<div id="content" [ngStyle]="{ 'font-size.px': fontSize }">
+
+<div *ngIf="showSearchBar" class="search-container">
+  <h3>Filtros de Pesquisa</h3>
+
+  <div *ngFor="let filter of filters; let i = index" class="filter-group">
+    <label for="searchField-{{ i }}">Buscar por:</label>
+    <select [formControl]="filter.searchField" class="search-select">
+      <option value="productName">Nome</option>
+      <option value="productType">Tipo</option>
+      <option value="numberLote">Número do Lote</option>
+      <option value="dateExpiration">Data de Validade</option>
+      <option value="priceForLote">Preço por Lote</option>
+      <option value="quantity">Quantidade</option>
+      <option value="status">Status</option>
+    </select>
+
+    <input
+      [formControl]="filter.searchTerm"
+      type="text"
+      placeholder="Digite o termo de busca..."
+      class="search-input" />
+
+    <button (click)="removeFilter(i)" class="remove-filter-button">X</button>
+  </div>
+
+  <button (click)="addFilter()" class="add-filter-button">Adicionar Filtro</button>
+</div>
+
+
+<div class="accessibility-buttons">
+  <button (click)="adjustFontSize('increase')">A+</button>
+  <button (click)="adjustFontSize('decrease')">A-</button>
+</div>
+
+  <button
+    (click)="toggleFieldSelectionVisibility()"
+    class="toggle-visibility-button"
+    [class.active]="showFieldSelection">
+    {{ showFieldSelection ? 'Ocultar Seleção de Campos' : 'Mostrar Seleção de Campos' }}
+  </button>
+
+  <div class="selection-container" *ngIf="showFieldSelection">
+
+    <div class="sort-container">
+      <label for="sortCriteria">Ordenar por:</label>
+      <select id="sortCriteria" [(ngModel)]="sortCriteria" (change)="sortProducts()" class="styled-select">
+        <option *ngFor="let field of displayFields" [value]="field.key">{{ field.label }}</option>
+      </select>
+      <button (click)="toggleSortDirection()" class="sort-direction-button">
+        {{ sortDirection === 'asc' ? '⬆️ Ascendente' : '⬇️ Descendente' }}
+      </button>
+    </div>
+
+    <div class="content" [ngStyle]="{ 'font-size.px': fontSize }">
+      <div class="field-selection">
+        <button (click)="toggleAllFields()" class="toggle-fields-button">Alternar Todos</button>
+        <div class="field-checkbox" *ngFor="let field of displayFields">
+          <input type="checkbox" [checked]="field.selected" (change)="toggleField(field.key)" id="{{field.key}}" />
+          <label for="{{field.key}}">{{ field.label }}</label>
+        </div>
+      </div>
+    </div>
+  </div>
+
+    <div *ngIf="filteredProducts.length > 0; else noProducts">
+  <ul class="product-list">
+    <li *ngFor="let product of paginatedProducts" class="product-item">
+      <h3><strong>{{ product.productName }}</strong></h3>
+
+      <div *ngIf="isFieldVisible('productId')">ID: {{ product.productId }}</div>
+      <div *ngIf="isFieldVisible('productName')">Produto: {{ product.productName }}</div>
+      <div *ngIf="isFieldVisible('productType')">Tipo: {{ product.productType }}</div>
+      <div *ngIf="isFieldVisible('quantity')">Quantidade: {{product.quantity}}</div>
+      <div *ngIf="isFieldVisible('numberLote')">Número do Lote: {{ product.numberLote }}</div>
+      <div *ngIf="isFieldVisible('dateExpiration')">
+        Data de Validade: {{ product.dateExpiration | date: 'dd/MM/yyyy' }}
+      </div>
+      <div *ngIf="isFieldVisible('gainPercentage')">
+        Porcentagem de Ganho: {{ product.gainPercentage }}%
+      </div>
+      <div *ngIf="isFieldVisible('priceForLote')">
+        Preço por Lote: R${{ product.priceForLote | number: '1.2-2' }}
+      </div>
+      <div *ngIf="isFieldVisible('priceForLotePercent')">
+        Preço por Lote com Percentual:  R${{ product.priceForLotePercent | number: '1.2-2' }}
+      </div>
+      <div *ngIf="isFieldVisible('priceForUnity')">
+        Preço Unitário: R${{ product.priceForUnity | number: '1.2-2' }}
+      </div>
+      <div *ngIf="isFieldVisible('priceForUnityPercent')">
+        Preço Unitário com Percentual:  R${{ product.priceForUnityPercent | number: '1.2-2' }}
+      </div>
+      <div *ngIf="isFieldVisible('createdAt')">
+        Criado em: {{ product.createdAt | date: 'dd/MM/yyyy HH:mm' }}
+      </div>
+      <div *ngIf="isFieldVisible('updatedAt')">
+        Atualizado em: {{ product.updatedAt | date: 'dd/MM/yyyy HH:mm' }}
+      </div>
+      <div *ngIf="isFieldVisible('status')">Status: {{ product.status }}</div>
+      <div *ngIf="isFieldVisible('promotion') && product.promotion">
+        <strong>Promoção:</strong>
+        <div>Descrição: {{ product.promotion.promotionDescription }}</div>
+        <div>Início: {{ product.promotion.startDate | date: 'dd/MM/yyyy' }}</div>
+        <div>Fim: {{ product.promotion.endDate | date: 'dd/MM/yyyy' }}</div>
+        <div>Desconto: {{ product.promotion.discountPercentage }}%</div>
+      </div>
+
+      <div *ngIf="isFieldVisible('description')">Descrição: {{ product.description }}</div>
+
+      <div class="action-buttons">
+        <button class="edit-button" (click)="openEditDialog(product)">✏️</button>
+        <button class="edit-button" (click)="openAlterDialog(product)">🔸</button>
+        <button class="delete-button" (click)="confirmDelete(product.productId)">🗑️</button>
+      </div>
+    </li>
+  </ul>
+
+  <div class="pagination">
+    <button *ngFor="let page of [].constructor(totalPages()); let i = index"
+            [class.active]="i + 1 === currentPage"
+            (click)="changePage(i + 1)">
+      {{ i + 1 }}
+    </button>
+  </div>
+</div>
+
+<ng-template #noProducts>
+  <p>Nenhum produto disponível no momento.</p>
+</ng-template>
+</div>
+

@@ -1,0 +1,43 @@
+<div class="header-container">
+  <a routerLink="/product" class="back-button">⬅ Voltar para o Visualização De Produtos</a>
+  <input type="text" [formControl]="searchControl" placeholder="Pesquisar produto..." class="search-input" />
+</div>
+
+<div class="field-selection">
+  <h3>Exibir Campos</h3>
+  <div *ngFor="let field of displayFields">
+    <input type="checkbox" [checked]="field.selected" (change)="toggleField(field.key)" />
+    <label>{{ field.label }}</label>
+  </div>
+</div>
+
+
+<div *ngIf="paginatedProducts.length > 0; else noProducts">
+  <ul class="product-list">
+    <li *ngFor="let product of paginatedProducts" class="product-item">
+      <div *ngIf="isFieldVisible('productName')">
+        <strong>Nome:</strong> {{ product.productName }}
+      </div>
+      <div *ngIf="isFieldVisible('dateExpiration')">
+        <strong>Validade:</strong> {{ product.dateExpiration | date:'dd/MM/yyyy' }}
+      </div>
+      <div *ngIf="isFieldVisible('daysUntilExpiration')">
+        <strong>Dias Restantes:</strong>
+        <span [ngClass]="{'days-warning': product.daysUntilExpiration <= 5, 'safe': product.daysUntilExpiration > 5}">
+          {{ product.daysUntilExpiration }} dias
+        </span>
+      </div>
+    </li>
+  </ul>
+  <div class="pagination">
+    <button *ngFor="let page of [].constructor(totalPages); let i = index"
+            (click)="changePage(i + 1)"
+            [class.active]="currentPage === i + 1">
+      {{ i + 1 }}
+    </button>
+  </div>
+</div>
+
+<ng-template #noProducts>
+  <p class="no-products">Nenhum produto encontrado.</p>
+</ng-template>
