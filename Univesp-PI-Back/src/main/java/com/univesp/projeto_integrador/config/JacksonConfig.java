@@ -6,19 +6,26 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import java.time.format.DateTimeFormatter;
-
+/**
+ * Configurações personalizadas para o Jackson (serialização JSON)
+ * - Suporte para tipos de data do Java 8+
+ * - Formatação adequada de datas
+ */
 @Configuration
 public class JacksonConfig {
-    //Para usar json
+
+    /**
+     * Configura o ObjectMapper para serialização JSON
+     * @return ObjectMapper configurado
+     */
     @Bean
     public ObjectMapper objectMapper() {
         ObjectMapper mapper = new ObjectMapper();
 
-        // Registra o módulo para suporte ao Java Time (LocalDate, etc.)
+        // Habilita suporte para LocalDate, LocalDateTime, etc.
         mapper.registerModule(new JavaTimeModule());
 
-        // Desabilita a serialização de datas como timestamps
+        // Evita serialização de datas como timestamp
         mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
         return mapper;

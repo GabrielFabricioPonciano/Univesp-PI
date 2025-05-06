@@ -14,6 +14,10 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
+/**
+ * Filtro de segurança para processar tokens JWT em cada requisição
+ * Valida tokens e configura contexto de segurança
+ */
 @Component
 public class SecurityFilter extends OncePerRequestFilter {
 
@@ -25,6 +29,9 @@ public class SecurityFilter extends OncePerRequestFilter {
         this.userRepository = userRepository;
     }
 
+    /**
+     * Processa cada requisição para validar token JWT
+     */
     @Override
     protected void doFilterInternal(
             HttpServletRequest request,
@@ -32,27 +39,31 @@ public class SecurityFilter extends OncePerRequestFilter {
             FilterChain filterChain
     ) throws ServletException, IOException {
 
-        var token = recoverToken(request);
+        String token = recoverToken(request);
         if (token != null) {
-            var email = tokenService.validateToken(token);
+            String email = tokenService.validateToken(token);
             if (email != null) {
-                UserDetails user = (UserDetails) userRepository.findByEmail(email)
+                UserDetails user = userRepository.findByEmail(email)
                         .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
 
-                var authentication = new UsernamePasswordAuthenticationToken(
-                        user,
-                        null,
-                        user.getAuthorities()
-                );
+                // Cria autenticação e configura no contexto de segurança
+                UsernamePasswordAuthenticationToken authentication =
+                        new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
+
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }
         }
         filterChain.doFilter(request, response);
     }
 
+    /**
+     * Extrai token do header Authorization
+     * @param request Requisição HTTP
+     * @return Token JWT ou null se não existir
+     */
     private String recoverToken(HttpServletRequest request) {
-        var authHeader = request.getHeader("Authorization");
+        String authHeader = request.getHeader("Authorization");
         if (authHeader == null) return null;
-        return authHeader.replace("Bearer ", "");
+        return authHeader.replace("Bearer ", "").trim();
     }
 }

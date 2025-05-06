@@ -18,19 +18,29 @@ public class TokenService {
     @Value("${api.security.token.secret}")
     private String secret;
 
+    /**
+     * Gera token JWT para um usuário
+     * @param usuario Entidade do usuário
+     * @return Token JWT assinado
+     */
     public String generateToken(Usuario usuario) {
         try {
             Algorithm algorithm = Algorithm.HMAC256(secret);
             return JWT.create()
-                    .withIssuer("projeto_integrador")
-                    .withSubject(usuario.getEmail())
-                    .withExpiresAt(generateExpirationDate())
+                    .withIssuer("projeto_integrador")    // Emissor do token
+                    .withSubject(usuario.getEmail())     // Identificação do usuário
+                    .withExpiresAt(generateExpirationDate()) // Expiração
                     .sign(algorithm);
         } catch (JWTCreationException exception) {
-            throw new RuntimeException("Erro ao gerar token", exception);
+            throw new RuntimeException("Erro na geração do token", exception);
         }
     }
 
+    /**
+     * Valida e decodifica um token JWT
+     * @param token Token a ser validado
+     * @return Email do usuário (subject) ou null se inválido
+     */
     public String validateToken(String token) {
         try {
             Algorithm algorithm = Algorithm.HMAC256(secret);
@@ -44,9 +54,13 @@ public class TokenService {
         }
     }
 
+    /**
+     * Gera data de expiração do token (2 horas)
+     * @return Instant com data/hora de expiração
+     */
     private Instant generateExpirationDate() {
         return LocalDateTime.now()
                 .plusHours(2)
-                .toInstant(ZoneOffset.of("-03:00"));
+                .toInstant(ZoneOffset.of("-03:00")); // Fuso horário de São Paulo
     }
 }
