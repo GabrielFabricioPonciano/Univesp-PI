@@ -2,21 +2,18 @@ package com.univesp.projeto_integrador.model;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-
+import lombok.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-//Refazer depois
 
+@Entity
+@Table(name = "products")
 @Getter
 @Setter
-@Entity
+@NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "products")
+@Builder
 public class Product {
 
     @Id
@@ -39,7 +36,7 @@ public class Product {
     @NotBlank(message = "O número do lote é obrigatório.")
     @Size(max = 50, message = "O número do lote pode ter no máximo 50 caracteres.")
     @Column(nullable = false, length = 50)
-    private String numberLote;
+    private String batchNumber;
 
     @Lob
     private String description;
@@ -47,49 +44,65 @@ public class Product {
     @NotNull(message = "A data de validade é obrigatória.")
     @Future(message = "A data de validade deve ser uma data futura.")
     @Column(nullable = false)
-    private LocalDate dateExpiration;
+    private LocalDate expirationDate;
 
     @NotNull(message = "A porcentagem de ganho é obrigatória.")
-    @DecimalMin(value = "0.00", inclusive = true, message = "A porcentagem de ganho não pode ser negativa.")
-    @Digits(integer = 3, fraction = 2, message = "A porcentagem de ganho deve ter no máximo 3 dígitos inteiros e 2 decimais.")
+    @DecimalMin(value = "0.00", message = "A porcentagem de ganho não pode ser negativa.")
+    @Digits(integer = 3, fraction = 2)
     @Column(nullable = false)
-    private BigDecimal gainPercentage;
+    private BigDecimal profitMargin;
 
-    @NotNull(message = "O preço por lote com percentual é obrigatório.")
-    @DecimalMin(value = "0.00", message = "O preço por lote com percentual deve ser maior ou igual a zero.")
-    @Digits(integer = 10, fraction = 2, message = "O preço por lote com percentual deve ter no máximo 10 dígitos inteiros e 2 decimais.")
+    // Campos calculados
+    @Digits(integer = 10, fraction = 2)
     @Column(nullable = false)
-    private BigDecimal priceForLotePercent;
+    private BigDecimal batchPrice;
 
-    @NotNull(message = "O preço por lote é obrigatório.")
-    @DecimalMin(value = "0.00", message = "O preço por lote deve ser maior ou igual a zero.")
-    @Digits(integer = 10, fraction = 2, message = "O preço por lote deve ter no máximo 10 dígitos inteiros e 2 decimais.")
-    @Column(nullable = false)
-    private BigDecimal priceForLote;
+    @Digits(integer = 10, fraction = 2)
+    private BigDecimal unitPrice;
 
-    @DecimalMin(value = "0.00", message = "O preço unitário com percentual deve ser maior ou igual a zero.")
-    @Digits(integer = 10, fraction = 2, message = "O preço unitário com percentual deve ter no máximo 10 dígitos inteiros e 2 decimais.")
-    private BigDecimal priceForUnityPercent;
-
-    @DecimalMin(value = "0.00", message = "O preço unitário deve ser maior ou igual a zero.")
-    @Digits(integer = 10, fraction = 2, message = "O preço unitário deve ter no máximo 10 dígitos inteiros e 2 decimais.")
-    private BigDecimal priceForUnity;
-
+    // Relacionamento com promoções
     @ManyToOne
-    @JoinColumn(name = "promotion_id", referencedColumnName = "promotionId", nullable = true)
+    @JoinColumn(name = "promotion_id")
     private Promotion promotion;
 
-    @Column(name = "created_at", updatable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+    @Digits(integer = 10, fraction = 2)
+    private BigDecimal finalPrice;
+
+    // Auditoria
+    @Column(updatable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     private LocalDateTime createdAt;
 
-    @Column(name = "updated_at", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP")
+    @Column(columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP")
     private LocalDateTime updatedAt;
 
-    @Column(nullable = false)
-    private String status = "";
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    @Builder.Default // 👈 Garante que o valor padrão seja usado mesmo com Lombok @Builder
+    private ProductStatus status = ProductStatus.ACTIVE;
 
-    public Product() {
+    public boolean hasActivePromotion() {
+        if (promotion == null) return false;
+        return promotion.getStatus() == Promotion.Status.ACTIVE &&
+                !LocalDate.now().isBefore(promotion.getStartDate()) &&
+                !LocalDate.now().isAfter(promotion.getEndDate());
+    }
+
+    public enum ProductStatus {
+        ACTIVE, INACTIVE, DISCONTINUED
+    }
+
+    public void setPromotion(Promotion promotion) {
+        this.promotion = promotion;
+    }
+
+    @PrePersist
+    protected void onCreate() {
         this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
         this.updatedAt = LocalDateTime.now();
     }
 }

@@ -1,138 +1,104 @@
 package com.univesp.projeto_integrador.service;
 
-import com.univesp.projeto_integrador.dto.ProductDTO;
-import com.univesp.projeto_integrador.dto.PromotionDTO;
-import com.univesp.projeto_integrador.exception.ResourceNotFoundException;
-import com.univesp.projeto_integrador.model.Product;
-import com.univesp.projeto_integrador.model.Promotion;
-import com.univesp.projeto_integrador.repository.ProductRepository;
-import com.univesp.projeto_integrador.yuxi.ProductCalculator;
+import com.univesp.projeto_integrador.dto.*;
+import com.univesp.projeto_integrador.exception.*;
+import com.univesp.projeto_integrador.model.*;
+import com.univesp.projeto_integrador.repository.*;
+import com.univesp.projeto_integrador.yuxi.PriceCalculator;
 import com.univesp.projeto_integrador.yuxi.ProductMapper;
 import com.univesp.projeto_integrador.yuxi.ProductValidator;
-import com.univesp.projeto_integrador.yuxi.PromotionMapper;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-//Refazer depois
 
 @Service
+@RequiredArgsConstructor
 public class ProductService {
 
-    @Autowired
-    private ProductRepository productRepository;
+    private final ProductRepository productRepository;
+    private final PromotionRepository promotionRepository;
+    private final PromotionService promotionService;
+    private final ProductMapper productMapper;
+    private final PriceCalculator priceCalculator;
+    private final ProductValidator productValidator;
 
-    @Autowired
-    private PromotionService promotionService;
-
-    @Autowired
-    private PromotionMapper promotionMapper;
-
-    @Autowired
-    private ProductMapper productMapper;
-
-    @Autowired
-    private ProductValidator productValidator;
-
-    @Autowired
-    private ProductCalculator productCalculator;
-
-    // Método para listar todos os produtos
-    public List<ProductDTO> findAll() {
-        List<Product> products = productRepository.findAll();
-        return products.stream().map(productMapper::entityToDto).collect(Collectors.toList());
+    @Transactional(readOnly = true)
+    public List<ProductResponse> findAll() {
+        return productRepository.findAll().stream()
+                .map(productMapper::toResponse)
+                .toList();
     }
 
-    // Método para buscar produto por ID
-    public ProductDTO findById(Long id) {
+    @Transactional(readOnly = true)
+    public ProductResponse findById(Long id) {
+        return productRepository.findById(id)
+                .map(productMapper::toResponse)
+                .orElseThrow(() -> new ResourceNotFoundException("Product", id));
+    }
+
+    @Transactional
+    public ProductResponse createProduct(ProductRequest request) {
+        productValidator.validateRequest(request);
+
+        Product product = productMapper.toEntity(request);
+        associatePromotion(request, product);
+        priceCalculator.calculatePrices(product);
+
+        return productMapper.toResponse(productRepository.save(product));
+    }
+
+    @Transactional
+    public ProductResponse updateProduct(Long id, ProductRequest request) {
         Product product = productRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Produto não encontrado com id " + id));
-        return productMapper.entityToDto(product);
+                .orElseThrow(() -> new ResourceNotFoundException("Product", id));
+
+        productValidator.validateRequest(request);
+        productMapper.updateFromRequest(request, product);
+
+        // Associe a promoção pelo ID sem carregar a lista de produtos
+        if (request.promotionId() != null) {
+            Promotion promotion = promotionRepository.findById(request.promotionId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Promotion", request.promotionId()));
+            product.setPromotion(promotion);
+        } else {
+            product.setPromotion(null);
+        }
+
+        priceCalculator.calculatePrices(product);
+        Product savedProduct = productRepository.save(product); // 👈 Salvamento explícito
+
+        return productMapper.toResponse(savedProduct);
     }
 
-    // Método para deletar produto por ID
+    @Transactional
     public void deleteProduct(Long id) {
         if (!productRepository.existsById(id)) {
-            throw new ResourceNotFoundException("Produto não encontrado com o ID: " + id);
+            throw new ResourceNotFoundException("Product", id);
         }
         productRepository.deleteById(id);
     }
 
-    // Método para atualizar um produto existente
-    public ProductDTO updateProduct(Long id, ProductDTO newProductDetails) {
-        Product existingProduct = productRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Produto não encontrado com id " + id));
-
-        // Valida os campos numéricos
-        productValidator.validateBigDecimalField(newProductDetails.getPriceForLote(), "O preço por lote");
-        productValidator.validateBigDecimalField(newProductDetails.getGainPercentage(), "A porcentagem de ganho");
-
-        // Atualiza os campos do produto manualmente
-        existingProduct.setProductName(newProductDetails.getProductName());
-        existingProduct.setProductType(newProductDetails.getProductType());
-        existingProduct.setQuantity(newProductDetails.getQuantity());
-        existingProduct.setNumberLote(newProductDetails.getNumberLote());
-        existingProduct.setDescription(newProductDetails.getDescription());
-        existingProduct.setDateExpiration(newProductDetails.getDateExpiration());
-        existingProduct.setGainPercentage(newProductDetails.getGainPercentage());
-        existingProduct.setPriceForLote(newProductDetails.getPriceForLote());
-        existingProduct.setStatus(newProductDetails.getStatus());
-        existingProduct.setUpdatedAt(LocalDateTime.now());
-
-        // Gerencia a promoção (adiciona ou remove)
-        if (newProductDetails.getPromotion() == null) {
-            existingProduct.setPromotion(null);
-        } else {
-            PromotionDTO promotionDTO = promotionService.getPromotionById(newProductDetails.getPromotion().getPromotionId());
-            Promotion promotion = promotionMapper.dtoToEntity(promotionDTO);
-            existingProduct.setPromotion(promotion);
-        }
-
-        // Calcula os preços com base no lote e na promoção (se houver)
-        productCalculator.calculatePrices(existingProduct);
-
-        // Salva o produto atualizado
-        Product savedProduct = productRepository.save(existingProduct);
-        return productMapper.entityToDto(savedProduct);
-    }
-
-
-
-
-    // Método para salvar um novo produto
-    public ProductDTO saveProduct(ProductDTO productDTO) {
-        Product product = productMapper.dtoToEntity(productDTO);
-
-        // Validações de campos obrigatórios e numéricos
-        productValidator.validateBigDecimalField(product.getPriceForLote(), "O preço por lote");
-        productValidator.validateBigDecimalField(product.getGainPercentage(), "A porcentagem de ganho");
-
-        // Verifica e associa a promoção, se houver
-        if (productDTO.getPromotion() != null) {
-            Promotion promotion = promotionMapper.dtoToEntity(
-                    promotionService.getPromotionById(productDTO.getPromotion().getPromotionId())
-            );
+    private void associatePromotion(ProductRequest request, Product product) {
+        if (request.promotionId() != null && request.promotionId() > 0) {
+            Promotion promotion = promotionService.getPromotionEntityById(request.promotionId());
             product.setPromotion(promotion);
+        } else {
+            product.setPromotion(null);
         }
-
-        // Cálculo de preços baseado no preço do lote e porcentagem de ganho
-        productCalculator.calculatePrices(product);
-
-        // Atualiza os campos de data
-        product.setCreatedAt(LocalDateTime.now());
-        product.setUpdatedAt(LocalDateTime.now());
-        product.setStatus("ACTIVE");
-        // Salva o produto no banco de dados
-        Product savedProduct = productRepository.save(product);
-
-        // Retorna o produto salvo como DTO
-        return productMapper.entityToDto(savedProduct);
     }
 
-    public List<Product> getProductsByStockLevel(int threshold) {
-        return productRepository.findByQuantityLessThan(threshold);
+    public ProductResponse getProductById(Long id) {
+        return productRepository.findById(id)
+                .map(productMapper::toResponse)
+                .orElseThrow(() -> new ResourceNotFoundException("Product", id)); // Formato correto
+    }
+
+    @Transactional(readOnly = true)
+    public List<ProductResponse> getLowStockProducts(int threshold) {
+        return productRepository.findByQuantityLessThan(threshold).stream()
+                .map(productMapper::toResponse)
+                .toList();
     }
 }

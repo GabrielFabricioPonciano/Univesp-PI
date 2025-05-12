@@ -1,77 +1,63 @@
 package com.univesp.projeto_integrador.controller;
 
-import com.univesp.projeto_integrador.dto.ProductDTO;
-import com.univesp.projeto_integrador.exception.ResourceNotFoundException;
-import com.univesp.projeto_integrador.model.Product;
+import com.univesp.projeto_integrador.dto.*;
 import com.univesp.projeto_integrador.service.ProductService;
-import org.springframework.beans.factory.annotation.Autowired;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-//Refazer depois
 
 @RestController
-@RequestMapping("/products")
+@RequestMapping("/api/products")
+@RequiredArgsConstructor
+@Tag(name = "Product Management", description = "Endpoints for managing products")
 public class ProductController {
 
-    @Autowired
-    private ProductService productService;
+    private final ProductService productService;
 
-    // Buscar todos os produtos
     @GetMapping
-    public List<ProductDTO> getAllProducts() {
-        return productService.findAll();
+    @Operation(summary = "Get all products")
+    public ResponseEntity<List<ProductResponse>> getAllProducts() {
+        return ResponseEntity.ok(productService.findAll());
     }
 
-    @GetMapping("/critical-stock")
-    public List<Product> getCriticalStockProducts(@RequestParam int threshold) {
-        return productService.getProductsByStockLevel(threshold);
-    }
-
-    // Buscar produto por ID
     @GetMapping("/{id}")
-    public ResponseEntity<ProductDTO> getProductById(@PathVariable Long id) {
-        ProductDTO product = productService.findById(id);
-        return ResponseEntity.ok(product);
+    @Operation(summary = "Get product by ID")
+    public ResponseEntity<ProductResponse> getProductById(@PathVariable Long id) {
+        return ResponseEntity.ok(productService.findById(id));
     }
 
-    // Criar novo produto
     @PostMapping
-    public ResponseEntity<ProductDTO> createProduct(@RequestBody ProductDTO product) {
-        ProductDTO createdProduct = productService.saveProduct(product);
-        return ResponseEntity.ok(createdProduct);
+    @ResponseStatus(HttpStatus.CREATED)
+    @Operation(summary = "Create new product")
+    public ResponseEntity<ProductResponse> createProduct(@RequestBody ProductRequest request) {
+        return new ResponseEntity<>(productService.createProduct(request), HttpStatus.CREATED);
     }
 
-    // Atualizar produto existente
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateProduct(
+    @Operation(summary = "Update existing product")
+    public ResponseEntity<ProductResponse> updateProduct(
             @PathVariable Long id,
-            @RequestBody ProductDTO productDetails) {
-        try {
-            // Verifica se os detalhes do produto estão presentes
-            if (productDetails == null) {
-                return ResponseEntity.badRequest().body("Os detalhes do produto não podem ser nulos.");
-            }
-
-            // Realiza a atualização do produto
-            ProductDTO updatedProduct = productService.updateProduct(id, productDetails);
-            return ResponseEntity.ok(updatedProduct);
-
-        } catch (ResourceNotFoundException e) {
-            // Retorna 404 se o produto não for encontrado
-            return ResponseEntity.status(404).body(e.getMessage());
-
-        } catch (Exception e) {
-            // Captura outros erros e retorna 500 (Internal Server Error)
-            return ResponseEntity.status(500).body("Erro ao atualizar o produto: " + e.getMessage());
-        }
+            @RequestBody ProductRequest request) {
+        return ResponseEntity.ok(productService.updateProduct(id, request));
     }
 
-    // Deletar produto
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteProduct(@PathVariable Long id) {
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @Operation(summary = "Delete product")
+    public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
         productService.deleteProduct(id);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/low-stock")
+    @Operation(summary = "Get products with low stock")
+    public ResponseEntity<List<ProductResponse>> getLowStockProducts(
+            @RequestParam(defaultValue = "10") int threshold) {
+        return ResponseEntity.ok(productService.getLowStockProducts(threshold));
     }
 }

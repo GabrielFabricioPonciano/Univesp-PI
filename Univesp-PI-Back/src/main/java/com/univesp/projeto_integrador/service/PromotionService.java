@@ -1,62 +1,65 @@
 package com.univesp.projeto_integrador.service;
 
-import com.univesp.projeto_integrador.dto.PromotionDTO;
-import com.univesp.projeto_integrador.exception.ResourceNotFoundException;
-import com.univesp.projeto_integrador.model.Promotion;
-import com.univesp.projeto_integrador.repository.PromotionRepository;
-import com.univesp.projeto_integrador.yuxi.PromotionMapper;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.univesp.projeto_integrador.dto.*;
+import com.univesp.projeto_integrador.exception.*;
+import com.univesp.projeto_integrador.model.*;
+import com.univesp.projeto_integrador.repository.*;
+import com.univesp.projeto_integrador.yuxi.*;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
 import java.util.List;
-//Refazer depois
 
 @Service
+@RequiredArgsConstructor
 public class PromotionService {
 
-    @Autowired
-    private PromotionRepository promotionRepository;
+    private final PromotionRepository repository;
+    private final ProductRepository productRepository;
+    private final PromotionMapper mapper;
+    private final PriceCalculator priceCalculator;
 
-    @Autowired
-    private PromotionMapper promotionMapper;
-
-    // Criar promoção
-    public PromotionDTO createPromotion(PromotionDTO promotionDTO) {
-        Promotion promotion = promotionMapper.dtoToEntity(promotionDTO);
-        promotion = promotionRepository.save(promotion);
-        return promotionMapper.entityToDto(promotion);
+    public PromotionResponse create(PromotionRequest request) {
+        Promotion promotion = mapper.toEntity(request);
+        return mapper.toResponse(repository.save(promotion));
     }
 
-    // Listar todas as promoções
-    public List<PromotionDTO> getAllPromotions() {
-        List<Promotion> promotions = promotionRepository.findAll();
-        return promotions.stream().map(promotionMapper::entityToDto).toList();
+    public List<PromotionResponse> getAll() {
+        return repository.findAll().stream()
+                .map(mapper::toResponse)
+                .toList();
     }
 
-    // Buscar promoção por ID
-    public PromotionDTO getPromotionById(Long promotionId) {
-        return promotionRepository.findById(promotionId)
-                .map(promotionMapper::entityToDto)
-                .orElseThrow(() -> new ResourceNotFoundException("Promoção não encontrada com id " + promotionId));
+    public PromotionResponse getById(Long id) {
+        return repository.findById(id)
+                .map(mapper::toResponse)
+                .orElseThrow(() -> new ResourceNotFoundException("Promoção", id));
     }
 
+    public PromotionResponse update(Long id, PromotionRequest request) {
+        Promotion existing = repository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Promoção", id));
 
-    // Atualizar promoção
-    public PromotionDTO updatePromotion(Long id, PromotionDTO promotionDTO) {
-        Promotion existingPromotion = promotionRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Promoção não encontrada com id " + id));
-
-        promotionMapper.updatePromotionFromDto(existingPromotion, promotionDTO);
-        promotionRepository.save(existingPromotion);
-
-        return promotionMapper.entityToDto(existingPromotion);
+        mapper.updateFromRequest(request, existing);
+        return mapper.toResponse(repository.save(existing));
     }
 
-    // Deletar promoção
-    public void deletePromotion(Long id) {
-        if (!promotionRepository.existsById(id)) {
-            throw new ResourceNotFoundException("Promoção não encontrada com id " + id);
-        }
-        promotionRepository.deleteById(id);
+    public void delete(Long id) {
+        Promotion promotion = repository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Promoção", id));
+
+        List<Product> products = productRepository.findByPromotion(promotion);
+
+        products.forEach(product -> {
+            product.setPromotion(null); // 👈 Remove a promoção
+            priceCalculator.calculatePrices(product); // 👈 Recalcula o preço SEM desconto
+        });
+
+        productRepository.saveAll(products); // 👈 Salva os produtos atualizados
+        repository.delete(promotion);
+    }
+
+    public Promotion getPromotionEntityById(Long promotionId) {
+        return repository.findById(promotionId)
+                .orElseThrow(() -> new ResourceNotFoundException("Promotion", promotionId));
     }
 }
