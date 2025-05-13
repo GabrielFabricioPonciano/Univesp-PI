@@ -11,15 +11,14 @@
   </div>
 </div>
 
-
 <div *ngIf="paginatedProducts.length > 0; else noProducts">
   <ul class="product-list">
     <li *ngFor="let product of paginatedProducts" class="product-item">
       <div *ngIf="isFieldVisible('productName')">
         <strong>Nome:</strong> {{ product.productName }}
       </div>
-      <div *ngIf="isFieldVisible('dateExpiration')">
-        <strong>Validade:</strong> {{ product.dateExpiration | date:'dd/MM/yyyy' }}
+      <div *ngIf="isFieldVisible('expirationDate')"> <!-- Nome corrigido -->
+        <strong>Validade:</strong> {{ product.expirationDate | date:'dd/MM/yyyy' }} <!-- Nome corrigido -->
       </div>
       <div *ngIf="isFieldVisible('daysUntilExpiration')">
         <strong>Dias Restantes:</strong>

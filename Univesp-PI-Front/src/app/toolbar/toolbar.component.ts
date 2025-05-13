@@ -1,12 +1,15 @@
 import { Component, Output, EventEmitter } from '@angular/core';
 import {Router, RouterLink} from "@angular/router";
+import {SlicePipe, UpperCasePipe} from "@angular/common";
 
 @Component({
   selector: 'app-toolbar',
   standalone: true,
   templateUrl: './toolbar.component.html',
   imports: [
-    RouterLink
+    RouterLink,
+    SlicePipe,
+    UpperCasePipe
   ],
   styleUrls: ['./toolbar.component.scss']
 })

@@ -1,118 +1,149 @@
+$product-primary: #2c3e50;
+$product-accent: #3498db;
+$product-error: #e74c3c;
+$product-bg: #f8fafc;
+
+.custom-dialog-container {
+  .mat-dialog-container {
+    padding: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+  }
+}
+
 .product-alter-container {
-  max-width: 600px;
-  margin: 25px;
-  padding: 20px;
-  border: 1px solid #ddd;
+  background: $product-bg;
+  padding: 2rem;
   border-radius: 8px;
-  background-color: #f9f9f9;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  max-height: 90vh;
+  overflow-y: auto;
 
   h2 {
-    text-align: center;
-    margin-bottom: 20px;
-    font-size: 1.5rem;
+    font-size: 1.75rem;
+    font-weight: 600;
+    color: white;
+    background: $product-primary;
+    padding: 1rem;
+    margin: -2rem -2rem 1.5rem;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
   }
 
   .alter-form {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "error"
+      "f1"
+      "adj"
+      "f2"
+      "btn";
+    gap: 1.5rem;
+
+    > .error-message { grid-area: error; color: $product-error; font-size: 0.9rem; }
+
+    > .form-group:nth-of-type(1) { grid-area: f1; }
+    > .adjust-buttons        { grid-area: adj; display: flex; gap: 1rem; }
+    > .form-group:nth-of-type(2) { grid-area: f2; }
+    > .form-buttons         { grid-area: btn; display: flex; justify-content: flex-end; gap: 1rem; }
 
     .form-group {
       display: flex;
       flex-direction: column;
-      gap: 5px;
 
       label {
-        font-weight: bold;
+        font-weight: 500;
+        color: $product-primary;
+        margin-bottom: 0.5rem;
       }
 
       input {
-        padding: 10px;
-        border: 1px solid #ccc;
-        border-radius: 4px;
+        padding: 0.75rem 1rem;
+        border: 1px solid #e0e0e0;
+        border-radius: 6px;
+        font-size: 1rem;
         box-sizing: border-box;
 
+        &.invalid { border-color: $product-error; }
         &:focus {
+          border-color: $product-accent;
           outline: none;
-          border-color: #007bff;
-          box-shadow: 0 0 4px rgba(0, 123, 255, 0.3);
+          box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.15);
         }
+      }
+
+      .hint {
+        font-size: 0.85rem;
+        color: darken($product-primary, 20%);
+        margin-top: 0.25rem;
+      }
+
+      .error-text {
+        font-size: 0.85rem;
+        color: $product-error;
+        margin-top: 0.25rem;
       }
     }
 
     .adjust-buttons {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      justify-content: center;
-
-      .positive-buttons,
-      .negative-buttons {
+      .button-group {
         display: flex;
-        gap: 10px;
-        justify-content: center;
-      }
-
-      .negative-buttons {
-        margin-top: 10px;
+        gap: 0.5rem;
 
         button {
-          background-color: #d9534f;
-          color: white;
+          padding: 0.5rem 1rem;
+          border: none;
+          border-radius: 6px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: background 0.2s;
 
-          &:hover {
-            background-color: #c9302c;
-          }
-        }
-      }
+          &:hover { transform: translateY(-1px); }
 
-      button {
-        padding: 10px 20px;
-        border: none;
-        border-radius: 4px;
-        background-color: #007bff;
-        color: #fff;
-        cursor: pointer;
-        transition: background-color 0.3s;
-
-        &:hover {
-          background-color: #0056b3;
-        }
-
-        &:focus {
-          outline: none;
+          &.positive { background: lighten($product-accent, 20%); color: white; }
+          &.negative { background: lighten($product-error, 20%); color: white; }
         }
       }
     }
 
     .form-buttons {
-      display: flex;
-      gap: 15px;
-      justify-content: center;
-
-      .cancel-button {
-        background-color: #d9534f;
-      }
-
       button {
-        padding: 10px 20px;
+        padding: 0.75rem 2rem;
+        border-radius: 6px;
+        font-weight: 600;
         border: none;
-        border-radius: 4px;
-        background-color: #007bff;
-        color: #fff;
         cursor: pointer;
-        transition: background-color 0.3s;
+        transition: background 0.2s, transform 0.2s;
 
-        &:disabled {
-          background-color: #6c757d;
-          cursor: not-allowed;
+        &.cancel-button {
+          background: #eceff1;
+          color: $product-primary;
+          &:hover { background: #cfd8dc; }
         }
 
-        &:hover:not(:disabled) {
-          background-color: #0056b3;
+        &.save-button {
+          background: $product-accent;
+          color: white;
+          &:hover:not(:disabled) { transform: translateY(-1px); }
+          &:disabled { opacity: 0.6; cursor: not-allowed; }
         }
       }
+    }
+  }
+
+  @media (max-width: 768px) {
+    padding: 1rem;
+
+    .alter-form {
+      grid-template-areas:
+        "error"
+        "f1"
+        "adj"
+        "f2"
+        "btn";
+
+      .form-buttons { flex-direction: column; button { width: 100%; } }
     }
   }
 }

@@ -1,46 +1,121 @@
-/* Barra de Ferramentas */
+// toolbar.component.scss
 .toolbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between; /* Alinhamento espaçado para empurrar o nome para a direita */
-  padding: 10px;
-  background-color: #f5f5f5;
-  border-bottom: 1px solid #ddd;
-  gap: 10px;
+  --primary-color: #2c3e50;
+  --accent-color: #3498db;
+  --hover-bg: rgba(52, 152, 219, 0.1);
+  --transition-speed: 0.2s;
 
-  .toolbar-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 1.5rem;
+  background: linear-gradient(145deg, #ffffff, #f8f9fa);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  border-radius: 0 0 12px 12px;
+  position: relative;
+  z-index: 1000;
+
+  &__actions {
     display: flex;
     align-items: center;
+    gap: 0.75rem;
+  }
 
-    .toolbar-button {
-      background: transparent;
-      border: none;
-      font-size: 1.5rem;
-      cursor: pointer;
-      color: #333;
-      transition: color 0.2s, transform 0.2s;
+  &__divider {
+    width: 1px;
+    height: 32px;
+    background: #e0e0e0;
+    margin: 0 0.5rem;
+  }
 
-      &:hover {
-        color: #007bff;
-        transform: scale(1.1); /* Aumenta ligeiramente o botão ao passar o mouse */
-      }
+  &__button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border: none;
+    border-radius: 10px;
+    background: transparent;
+    cursor: pointer;
+    transition: all var(--transition-speed) ease;
+    position: relative;
 
-      &:active {
-        transform: scale(0.95); /* Feedback visual de clique */
-      }
+    &:hover {
+      background: var(--hover-bg);
+      transform: translateY(-1px);
 
-      &:focus {
-        outline: none;
+      .toolbar__icon {
+        color: var(--accent-color);
       }
     }
+
+    &:active {
+      transform: translateY(0);
+    }
+
+    &--logout {
+      &:hover {
+        background: rgba(231, 76, 60, 0.1);
+
+        .toolbar__icon {
+          color: #e74c3c;
+        }
+      }
+    }
+  }
+
+  &__icon {
+    font-size: 1.4rem;
+    color: var(--primary-color);
+    transition: color var(--transition-speed) ease;
   }
 
   .user-info {
     display: flex;
     align-items: center;
-    gap: 10px; /* Espaço entre o nome do usuário e o botão de logout */
-    margin-left: auto; /* Empurra o nome do usuário para o canto direito */
-    font-size: 1rem;
-    color: #333;
+    gap: 0.75rem;
+
+    &__avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--accent-color);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+
+    &__name {
+      font-weight: 500;
+      color: var(--primary-color);
+      font-size: 0.95rem;
+    }
+  }
+
+  &__user {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  @media (max-width: 768px) {
+    padding: 0.5rem;
+
+    .user-info__name {
+      display: none;
+    }
+
+    &__divider {
+      margin: 0 0.25rem;
+    }
+
+    &__button {
+      width: 36px;
+      height: 36px;
+    }
   }
 }

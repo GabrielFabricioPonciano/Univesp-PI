@@ -22,8 +22,8 @@
 
     <!-- Número do Lote -->
     <div class="form-group">
-      <label for="numberLote">Número do Lote:</label>
-      <input id="numberLote" formControlName="numberLote" type="text" />
+      <label for="batchNumber">Número do Lote:</label>
+      <input id="batchNumber" formControlName="batchNumber" type="text" />
     </div>
 
     <!-- Descrição -->
@@ -34,26 +34,26 @@
 
     <!-- Data de Validade -->
     <div class="form-group">
-      <label for="dateExpiration">Data de Validade:</label>
-      <input id="dateExpiration" type="date" formControlName="dateExpiration" />
+      <label for="expirationDate">Data de Validade:</label>
+      <input id="expirationDate" type="date" formControlName="expirationDate" />
     </div>
 
     <!-- Preço por Lote -->
     <div class="form-group">
-      <label for="priceForLote">Preço por Lote:</label>
-      <input id="priceForLote" type="number" formControlName="priceForLote" />
+      <label for="batchPrice">Preço por Lote:</label>
+      <input id="batchPrice" type="number" formControlName="batchPrice" />
     </div>
 
     <!-- Porcentagem de Ganho -->
     <div class="form-group">
-      <label for="gainPercentage">Porcentagem de Ganho:</label>
-      <input id="gainPercentage" type="number" formControlName="gainPercentage" />
+      <label for="profitMargin">Porcentagem de Ganho:</label>
+      <input id="profitMargin" type="number" formControlName="profitMargin" />
     </div>
 
     <!-- Promoção -->
     <div class="form-group">
-      <label for="promotion">Promoção:</label>
-      <select id="promotion" formControlName="promotion">
+      <label for="promotionId">Promoção:</label>
+      <select id="promotionId" formControlName="promotionId">
         <option [ngValue]="null">Nenhuma</option>
         <option *ngFor="let promo of promotions" [value]="promo.promotionId">
           {{ promo.promotionDescription }}
@@ -66,8 +66,8 @@
       <label for="status">Status:</label>
       <select id="status" formControlName="status">
         <option value="ACTIVE">Ativo</option>
-        <option value="ROTTEN">Vendido</option>
-        <option value="INACTIVE">Estragado</option>
+        <option value="INACTIVE">Inativo</option>
+        <option value="DISCONTINUED">Descontinuado</option>
       </select>
     </div>
 

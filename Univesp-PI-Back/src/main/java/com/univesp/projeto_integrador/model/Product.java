@@ -80,15 +80,17 @@ public class Product {
     @Builder.Default // 👈 Garante que o valor padrão seja usado mesmo com Lombok @Builder
     private ProductStatus status = ProductStatus.ACTIVE;
 
+
+
+    public enum ProductStatus {
+        ACTIVE, INACTIVE, DISCONTINUED
+    }
+
     public boolean hasActivePromotion() {
         if (promotion == null) return false;
         return promotion.getStatus() == Promotion.Status.ACTIVE &&
                 !LocalDate.now().isBefore(promotion.getStartDate()) &&
                 !LocalDate.now().isAfter(promotion.getEndDate());
-    }
-
-    public enum ProductStatus {
-        ACTIVE, INACTIVE, DISCONTINUED
     }
 
     public void setPromotion(Promotion promotion) {

@@ -17,21 +17,31 @@ export interface Product {
   productName: string;
   productType: string;
   quantity: number;
-  numberLote: string;
+  batchNumber: string;
   description: string;
-  dateExpiration?: string | Date;
-  gainPercentage: number;
-  priceForLote: number;
-  priceForLotePercent?: number;
-  priceForUnity?: number;
-  priceForUnityPercent?: number;
+  expirationDate?: string | Date;
+  profitMargin: number;
+  batchPrice: number;
+  unitPrice: number;
+  finalPrice: number;
   createdAt?: Date;
   updatedAt?: Date;
-  status: 'ACTIVE' | 'INACTIVE' | 'ROTTEN';
-  promotion?: Promotion;
+  status: 'ACTIVE' | 'INACTIVE' | 'DISCONTINUED';
+  promotionId?: number;
   showActions?: boolean;
 }
-
+export interface ProductUpdate {
+  productName: string;
+  productType: string;
+  quantity: number;
+  batchNumber: string;
+  description: string;
+  expirationDate?: string | Date; // Adicionado operador de opcional
+  profitMargin: number;
+  batchPrice: number;
+  status: 'ACTIVE' | 'INACTIVE' | 'DISCONTINUED';
+  promotionId?: number | null;
+}
 @Injectable({
   providedIn: 'root',
 })
@@ -92,11 +102,14 @@ export class ProductService {
     );
   }
 
-  // Atualiza um produto existente
-  updateProduct(product: Product, productId: number): Observable<Product> {
-    this.formatDate(product); // Formata datas antes de enviar
-    return this.http.put<Product>(`${this.apiUrl}/${productId}`, product, { headers: this.getHeaders() }).pipe(
-      tap(() => this.refreshProductList()), // Atualiza a lista após a edição
+  // Método updateProduct simplificado
+  updateProduct(updatedProduct: ProductUpdate, productId: number): Observable<Product> {
+    return this.http.put<Product>(
+      `${this.apiUrl}/${productId}`,
+      updatedProduct,
+      { headers: this.getHeaders() }
+    ).pipe(
+      tap(() => this.refreshProductList()),
       catchError(this.handleError)
     );
   }
@@ -106,24 +119,17 @@ export class ProductService {
   // Converte strings de datas recebidas em objetos Date
   private convertDates(products: Product[]): void {
     products.forEach((product) => {
-      if (typeof product.dateExpiration === 'string') {
-        product.dateExpiration = new Date(product.dateExpiration);
-      }
-      if (product.promotion) {
-        product.promotion.startDate = product.promotion.startDate
-          ? new Date(product.promotion.startDate)
-          : undefined;
-        product.promotion.endDate = product.promotion.endDate
-          ? new Date(product.promotion.endDate)
-          : undefined;
+      // Corrige 'dateExpiration' para 'expirationDate'
+      if (typeof product.expirationDate === 'string') {
+        product.expirationDate = new Date(product.expirationDate);
       }
     });
   }
 
   // Formata datas para o formato ISO antes de enviar ao backend
   private formatDate(product: Product): void {
-    if (product.dateExpiration instanceof Date) {
-      product.dateExpiration = product.dateExpiration.toISOString().split('T')[0];
+    if (product.expirationDate instanceof Date) {
+      product.expirationDate = product.expirationDate.toISOString().split('T')[0];
     }
   }
 

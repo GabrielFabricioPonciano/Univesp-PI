@@ -1,150 +1,205 @@
-.product-form-container {
-  background: #fff;
-  padding: 20px;
-  border-radius: 32px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-  width: 100%;
-  max-width: 500px;
-  margin: 0px;
-  position: static;
-
-  @media (min-width: 768px) {
-    padding: 25px 35px;
-  }
-
-  h2 {
-    font-size: 1.5rem;
-    font-weight: bold;
-    color: #333;
-    margin-bottom: 15px;
-    text-align: center;
-  }
-
-  .close-button {
-    position: absolute;
-    top: 10px;
-    right: 15px;
-    background: none;
-    border: none;
-    font-size: 1.5rem;
-    color: #888;
-    cursor: pointer;
-    transition: color 0.3s ease;
-
-    &:hover {
-      color: #333;
-    }
-  }
-}
-
-.product-form {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-
-  .form-group {
-    display: flex;
-    flex-direction: column;
-
-    label {
-      font-weight: 600;
-      color: #444;
-      font-size: 1rem;
-      margin-bottom: 5px;
-    }
-
-    input,
-    textarea {
-      width: 100%;
-      padding: 10px;
-      border: 1px solid #ddd;
-      border-radius: 5px;
-      font-size: 1rem;
-      background-color: #f9f9f9;
-      transition: border-color 0.3s ease;
-
-      &:focus {
-        border-color: #007bff;
-        background-color: #fff;
-        box-shadow: 0 0 4px rgba(0, 123, 255, 0.3);
-      }
-
-      &:hover {
-        border-color: #bbb;
-      }
-    }
-
-    textarea {
-      resize: vertical;
-      min-height: 100px;
-    }
-  }
-
-  .readonly-group {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    margin-top: 10px;
-
-    input[readonly] {
-      background-color: #e9ecef;
-      border: 1px solid #ddd;
-      border-radius: 5px;
-      padding: 10px;
-      font-size: 1rem;
-      color: #6c757d;
-      cursor: not-allowed;
-    }
-  }
-
-  .form-buttons {
-    display: flex;
-    gap: 10px;
-    justify-content: space-between;
-
-    button {
-      flex: 1;
-      background-color: #007bff;
-      color: #fff;
-      border: none;
-      padding: 12px 20px;
-      border-radius: 6px;
-      font-size: 1rem;
-      cursor: pointer;
-      transition: background-color 0.3s ease;
-
-      &:hover {
-        background-color: #0056b3;
-      }
-
-      &:disabled {
-        background-color: #ccc;
-        cursor: not-allowed;
-      }
-    }
-
-    .close-button {
-      background-color: #d9534f;
-
-      &:hover {
-        background-color: #c9302c;
-      }
-    }
-  }
-}
+$product-primary: #2c3e50;
+$product-accent: #3498db;
+$product-error: #e74c3c;
+$product-bg: #f8fafc;
 
 .custom-dialog-container {
   .mat-dialog-container {
     padding: 0;
-    background: transparent;
-    box-shadow: none;
-    border: none;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+  }
+}
+
+.product-form-container {
+  position: fixed;
+  inset: 0;
+  background: $product-bg;
+  padding: 2rem;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+
+  h2 {
+    font-size: 1.75rem;
+    font-weight: 600;
+    color: white;
+    background: $product-primary;
+    padding: 1rem;
+    margin: -2rem -2rem 1.5rem;
   }
 
-  .product-form-container {
-    background: #fff;
-    border-radius: 12px;
-    box-shadow: none;
+  .close-button {
+    position: absolute;
+    top: 2rem;
+    right: 2rem;
+    background: none;
     border: none;
+    font-size: 1.5rem;
+    color: white;
+    cursor: pointer;
+    transition: background 0.3s;
+    z-index: 10;
+    &:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+  }
+
+  .product-form {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    grid-template-areas:
+      "f1 f2 f3"
+      "f4 f5 f6"
+      "f7 f8 f9"
+      "r1 r2 r3"
+      "btn btn btn";
+
+    @for $i from 1 through 9 {
+      .form-group:nth-child(#{$i}) { grid-area: f#{$i}; }
+    }
+
+    @for $i from 10 through 12 {
+      .readonly-group:nth-child(#{$i}) { grid-area: r#{($i - 9)}; }
+    }
+  }
+
+  .form-group,
+  .readonly-group {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .form-group label {
+    font-weight: 500;
+    color: $product-primary;
+    margin-bottom: 0.5rem;
+  }
+
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    padding: 0.75rem 1rem;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    font-size: 1rem;
+    width: 100%;
+    box-sizing: border-box;
+    &:focus {
+      border-color: $product-accent;
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.15);
+    }
+  }
+
+  .form-group textarea {
+    resize: vertical;
+    min-height: 100px;
+  }
+
+  .form-group .error-message {
+    color: $product-error;
+    font-size: 0.85rem;
+    margin-top: 0.25rem;
+  }
+
+  .readonly-group {
+    background: #e3f2fd;
+    padding: 1rem;
+    border-radius: 6px;
+    border-left: 4px solid $product-accent;
+
+    label {
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      color: #1565c0;
+    }
+
+    input {
+      border: none;
+      background: transparent;
+      font-size: 1rem;
+      padding: 0;
+    }
+  }
+
+  .form-buttons {
+    grid-area: btn;
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 2rem;
+    position: sticky;
+    bottom: 0;
+    background: $product-bg;
+    padding: 1rem 0;
+    z-index: 5;
+
+    button {
+      padding: 0.75rem 2rem;
+      border-radius: 6px;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.2s;
+      position: static !important;
+    }
+
+    .btn-cancel {
+      background: #eceff1;
+      color: $product-primary;
+      z-index: 6;
+      &:hover {
+        background: #cfd8dc;
+        transform: translateY(-1px);
+      }
+    }
+
+    button[type="submit"] {
+      background: $product-accent;
+      color: white;
+      &:hover:not(:disabled) {
+        transform: translateY(-1px);
+      }
+      &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+    }
+  }
+
+  @media (max-width: 768px) {
+    padding: 1rem;
+
+    h2 {
+      font-size: 1.5rem;
+      margin: -1rem -1rem 1rem;
+      padding: 1rem;
+    }
+
+    .close-button {
+      top: 1rem;
+      right: 1rem;
+    }
+
+    .product-form {
+      grid-template-columns: 1fr;
+      grid-template-areas:
+        "f1" "f2" "f3" "f4" "f5" "f6" "f7" "f8" "f9"
+        "r1" "r2" "r3"
+        "btn";
+    }
+
+    .form-buttons {
+      flex-direction: column;
+      button {
+        width: 100%;
+        text-align: center;
+      }
+    }
   }
 }

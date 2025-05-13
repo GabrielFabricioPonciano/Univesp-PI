@@ -7,7 +7,7 @@ import {
 } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { DecimalPipe, NgForOf, NgIf } from '@angular/common';
-import { Product, ProductService, Promotion } from '../../productService';
+import {Product, ProductService, ProductUpdate, Promotion} from '../../productService';
 import { PromotionService } from '../../../promotions/promotionService';
 
 @Component({
@@ -40,16 +40,16 @@ export class EditProductDialogComponent implements OnInit {
       productName: [this.data.productName, Validators.required],
       productType: [this.data.productType],
       quantity: [this.data.quantity, [Validators.required, Validators.min(1)]],
-      numberLote: [this.data.numberLote, Validators.required],
+      batchNumber: [this.data.batchNumber, Validators.required], // Nome corrigido
       description: [this.data.description],
-      dateExpiration: [
-        this.formatDateForInput(this.data.dateExpiration),
+      expirationDate: [ // Nome corrigido
+        this.formatDateForInput(this.data.expirationDate),
         Validators.required,
       ],
-      priceForLote: [this.data.priceForLote, [Validators.required, Validators.min(0)]],
-      gainPercentage: [this.data.gainPercentage, [Validators.required, Validators.min(0)]],
+      batchPrice: [this.data.batchPrice, [Validators.required, Validators.min(0)]], // Nome corrigido
+      profitMargin: [this.data.profitMargin, [Validators.required, Validators.min(0)]], // Nome corrigido
       status: [this.data.status, Validators.required],
-      promotion: [this.data.promotion?.promotionId || null], // Aceita promoção como null
+      promotionId: [this.data.promotionId || null], // Campo atualizado
     });
   }
 
@@ -70,20 +70,21 @@ export class EditProductDialogComponent implements OnInit {
   onSave(): void {
     if (this.productForm.valid) {
       const productId = this.data.productId;
-      const payload: Product = {
-        ...this.productForm.value,
-        productId: productId,
-        promotion: this.productForm.value.promotion
-          ? { promotionId: this.productForm.value.promotion }
-          : null,
+
+      // Convert expirationDate para Date
+      const rawValue = this.productForm.getRawValue();
+      const payload: ProductUpdate = {
+        ...rawValue,
+        expirationDate: new Date(rawValue.expirationDate),
+        status: rawValue.status as 'ACTIVE' | 'INACTIVE' | 'DISCONTINUED'
       };
 
       this.productService.updateProduct(payload, productId).subscribe({
         next: () => this.dialogRef.close(true),
         error: (error) => {
-          this.errorMessage = `Erro ao atualizar produto: ${error.message}`;
-          console.error('Erro de atualização:', error);
-        },
+          console.error('Erro completo:', error);
+          this.errorMessage = `Erro: ${error.error?.message || error.message}`;
+        }
       });
     }
   }

@@ -38,12 +38,9 @@ public class SecurityConfig {
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize -> authorize
-                        // Libera apenas login e registro sem autenticação
-                        .requestMatchers(HttpMethod.POST, "/auth/login", "/auth/register").permitAll()
-                        // Libera documentação do Swagger
-                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
-                        // Todos os outros endpoints exigem autenticação
-                        .anyRequest().authenticated()
+                        .requestMatchers(HttpMethod.POST, "/auth/login", "/auth/register").permitAll() // Libera login e registro
+                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll() // Libera Swagger
+                        .anyRequest().authenticated() // 👈 Todos os outros endpoints exigem APENAS autenticação (sem roles)
                 )
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class);
 

@@ -9,7 +9,7 @@ import {
 } from '@angular/forms';
 import { ProductService, Product } from '../productService';
 import { MatDialogRef } from '@angular/material/dialog';
-import {DecimalPipe, NgIf} from "@angular/common";
+import { DecimalPipe, NgIf } from "@angular/common";
 
 @Component({
   selector: 'app-product-form',
@@ -24,10 +24,10 @@ import {DecimalPipe, NgIf} from "@angular/common";
 })
 export class ProductFormComponent implements OnInit {
   productForm!: FormGroup;
-  priceForUnity = 0.0;
-  priceForLotePercent = 0.0;
-  priceForUnityPercent = 0.0;
-  errorMessage: string = ''; // Mensagem de erro global
+  unitPrice = 0.0;          // Nome corrigido
+  finalPriceWithMargin = 0.0; // Nome corrigido
+  unitPriceWithMargin = 0.0;  // Nome corrigido
+  errorMessage: string = '';
 
   constructor(
     private fb: FormBuilder,
@@ -44,22 +44,23 @@ export class ProductFormComponent implements OnInit {
     this.productForm = this.fb.group({
       productName: ['', Validators.required],
       quantity: [1, [Validators.required, Validators.min(1)]],
-      numberLote: ['', Validators.required],
+      batchNumber: ['', Validators.required], // Nome corrigido
       productType: ['', Validators.required],
-      dateExpiration: ['', [Validators.required, this.futureDateValidator]],
-      priceForLote: [0.0, [Validators.required, Validators.min(0)]],
-      gainPercentage: [0.0, [Validators.required, Validators.min(0)]],
-      description: ['', Validators.required]
+      expirationDate: ['', [Validators.required, this.futureDateValidator]], // Nome corrigido
+      batchPrice: [0.0, [Validators.required, Validators.min(0)]], // Nome corrigido
+      profitMargin: [0.0, [Validators.required, Validators.min(0)]], // Nome corrigido
+      description: ['', Validators.required],
+      status: ['ACTIVE', Validators.required]
     });
   }
 
   calculatePrices(): void {
-    const { quantity, priceForLote, gainPercentage } = this.productForm.value;
+    const { quantity, batchPrice, profitMargin } = this.productForm.value;
 
-    if (quantity > 0 && priceForLote >= 0 && gainPercentage >= 0) {
-      this.priceForUnity = priceForLote / quantity;
-      this.priceForLotePercent = priceForLote * (1 + gainPercentage / 100);
-      this.priceForUnityPercent = this.priceForLotePercent / quantity;
+    if (quantity > 0 && batchPrice >= 0 && profitMargin >= 0) {
+      this.unitPrice = batchPrice / quantity;
+      this.finalPriceWithMargin = batchPrice * (1 + profitMargin / 100);
+      this.unitPriceWithMargin = this.finalPriceWithMargin / quantity;
     }
   }
 
@@ -105,4 +106,9 @@ export class ProductFormComponent implements OnInit {
   onCancel(): void {
     this.dialogRef.close();
   }
+}
+export enum ProductStatus {
+  ACTIVE = 'ACTIVE',
+  INACTIVE = 'INACTIVE',
+  DISCONTINUED = 'DISCONTINUED'
 }

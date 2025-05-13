@@ -113,13 +113,12 @@ export class OrganizePromotionsDialogComponent implements OnInit {
   applyPromotion(): void {
     if (this.selectedPromotion && this.selectedProducts.length) {
       let updateObservables = this.selectedProducts.map(product => {
-        product.promotion = this.selectedPromotion;
+        product.promotionId = this.selectedPromotion?.promotionId; // Alterado para promotionId
         return this.productService.updateProduct(product, product.productId);
       });
 
-      // Executa todas as atualizações e aguarda a conclusão
       forkJoin(updateObservables).subscribe(() => {
-        this.dialogRef.close(true);  // Fecha o diálogo e retorna 'true' após todas as atualizações
+        this.dialogRef.close(true);
       });
     }
   }

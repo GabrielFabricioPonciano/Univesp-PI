@@ -1,29 +1,72 @@
+<!-- alterproduct.component.html -->
+
 <div class="product-alter-container">
   <h2>Alterar Quantidade</h2>
+
   <form [formGroup]="alterForm" (ngSubmit)="onSave()" class="alter-form">
-    <div class="form-group">
-      <label for="changeQuantity">Alterar Quantidade:</label>
-      <input id="changeQuantity" formControlName="changeQuantity" type="number" />
+    <!-- Exibição de erros -->
+    <div class="error-message" *ngIf="errorMessage">
+      {{ errorMessage }}
     </div>
+
+    <!-- Campo de ajuste -->
+    <div class="form-group">
+      <label for="changeQuantity">Ajuste de Quantidade:</label>
+      <input
+        id="changeQuantity"
+        formControlName="changeQuantity"
+        type="number"
+        [min]="-this.initialQuantity"
+        [max]="1000"
+      />
+      <small class="hint">
+        Valores positivos aumentam, negativos diminuem o estoque
+      </small>
+    </div>
+
+    <!-- Botões de ajuste rápido -->
     <div class="adjust-buttons">
-      <div class="positive-buttons">
+      <div class="button-group positive">
         <button type="button" (click)="adjustQuantity(1)">+1</button>
         <button type="button" (click)="adjustQuantity(10)">+10</button>
         <button type="button" (click)="adjustQuantity(50)">+50</button>
       </div>
-      <div class="negative-buttons">
+      <div class="button-group negative">
         <button type="button" (click)="adjustQuantity(-1)">-1</button>
         <button type="button" (click)="adjustQuantity(-10)">-10</button>
         <button type="button" (click)="adjustQuantity(-50)">-50</button>
       </div>
     </div>
+
+    <!-- Quantidade final -->
     <div class="form-group">
-      <label>Quantidade Final:</label>
-      <input [value]="finalQuantity" readonly />
+      <label>Estoque Final:</label>
+      <input
+        [value]="finalQuantity"
+        readonly
+        [class.invalid]="finalQuantity < 1"
+      />
+      <small *ngIf="finalQuantity < 1" class="error-text">
+        Quantidade não pode ser menor que 1
+      </small>
     </div>
+
+    <!-- Botões de ação -->
     <div class="form-buttons">
-      <button type="button" class="cancel-button" (click)="onCancel()">Cancelar</button>
-      <button type="submit" [disabled]="alterForm.invalid">Salvar</button>
+      <button
+        type="button"
+        class="cancel-button"
+        (click)="onCancel()"
+      >
+        Cancelar
+      </button>
+      <button
+        type="submit"
+        class="save-button"
+        [disabled]="alterForm.invalid || finalQuantity < 1"
+      >
+        Confirmar Alteração
+      </button>
     </div>
   </form>
 </div>

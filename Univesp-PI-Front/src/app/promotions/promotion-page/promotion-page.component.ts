@@ -35,13 +35,18 @@ export class PromotionPageComponent implements OnInit {
     this.loadPromotions(); // Carregar as promoções também
   }
 
+  getPromotionById(promotionId?: number): Promotion | undefined {
+    return this.promotions.find(p => p.promotionId === promotionId);
+  }
+
   // Carregar lista de produtos e separar entre com e sem promoção
   loadProducts(): void {
     this.loading = true;
     this.productService.getProducts().subscribe(products => {
       this.products = products;
-      this.productsWithPromotion = products.filter(p => p.promotion);
-      this.productsWithoutPromotion = products.filter(p => !p.promotion);
+      // 👇 Corrigir para usar promotionId
+      this.productsWithPromotion = products.filter(p => p.promotionId);
+      this.productsWithoutPromotion = products.filter(p => !p.promotionId);
       this.loading = false;
     });
   }
@@ -55,10 +60,10 @@ export class PromotionPageComponent implements OnInit {
 
   removePromotion(product: Product): void {
     if (confirm('Tem certeza que deseja remover a promoção?')) {
-      this.loading = true;  // Ativa o estado de carregamento
-      product.promotion = undefined;
+      this.loading = true;
+      product.promotionId = undefined; // Alterado para promotionId
       this.productService.updateProduct(product, product.productId).subscribe(() => {
-        this.loadProducts(); // Atualiza a lista de produtos
+        this.loadProducts();
       });
     }
   }

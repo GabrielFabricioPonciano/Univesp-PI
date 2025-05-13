@@ -20,11 +20,13 @@ export class ValidationComponent implements OnInit {
   filteredProducts: ProductWithExpiration[] = [];
   paginatedProducts: ProductWithExpiration[] = [];
   searchControl = new FormControl('');
+
   displayFields = [
     { key: 'productName', label: 'Nome do Produto', selected: true },
-    { key: 'dateExpiration', label: 'Data de Validade', selected: true },
+    { key: 'expirationDate', label: 'Data de Validade', selected: true }, // Nome corrigido
     { key: 'daysUntilExpiration', label: 'Dias Restantes', selected: true },
   ];
+
   selectedSort = 'name';
   selectedStatusFilter = '';
   currentPage = 1;
@@ -51,8 +53,8 @@ export class ValidationComponent implements OnInit {
   calculateDaysUntilExpiration(products: Product[]): ProductWithExpiration[] {
     const currentDate: Date = new Date();
     return products.map(product => {
-      if (!product.dateExpiration) return { ...product, daysUntilExpiration: Infinity };
-      const dateExpiration = new Date(product.dateExpiration);
+      if (!product.expirationDate) return { ...product, daysUntilExpiration: Infinity };
+      const dateExpiration = new Date(product.expirationDate);
       const timeDiff = dateExpiration.getTime() - currentDate.getTime();
       const daysUntilExpiration = Math.ceil(timeDiff / (1000 * 3600 * 24));
       return { ...product, daysUntilExpiration };

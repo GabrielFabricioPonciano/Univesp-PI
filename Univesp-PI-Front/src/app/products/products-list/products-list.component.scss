@@ -1,357 +1,369 @@
-$breakpoints: (
-  sm: 576px,
-  md: 768px,
-  lg: 992px,
-  xl: 1200px
-);
+$primary-color: #2c3e50;
+$accent-color: #3498db;
+$error-color: #e53e3e;
+$background: #f8fafc;
+$text-color: #4a5568;
 
-$colors: (
-  primary: (
-    base: #4a90e2,
-    light: #6ba5e7,
-    dark: #357abd,
-    contrast: #fff
-  ),
-  secondary: (
-    base: #f5f7fa,
-    light: #fff,
-    dark: #e1e5ea,
-    contrast: #333
-  ),
-  status: (
-    success: #4caf50,
-    warning: #ffc107,
-    error: #ff5252,
-    info: #2196f3
-  ),
-  neutral: (
-    white: #fff,
-    gray-light: #f5f5f5,
-    gray: #ddd,
-    gray-dark: #888,
-    black: #333
-  )
-);
+.search-container {
+  background: #f8f9fa;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  border-radius: 12px;
+  border: 1px solid #e9ecef;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.05);
 
-$typography: (
-  font-family: ('Roboto', sans-serif),
-  sizes: (
-    xs: 0.75rem,
-    sm: 0.875rem,
-    base: 1rem,
-    md: 1.125rem,
-    lg: 1.25rem,
-    xl: 1.5rem
-  ),
-  weights: (
-    light: 300,
-    regular: 400,
-    medium: 500,
-    bold: 700
-  ),
-  line-heights: (
-    tight: 1.2,
-    base: 1.5,
-    relaxed: 1.75
-  )
-);
-
-$spacing: (
-  xs: 0.25rem,
-  sm: 0.5rem,
-  md: 1rem,
-  lg: 1.5rem,
-  xl: 2rem
-);
-
-@mixin flex($direction: row, $justify: flex-start, $align: stretch, $gap: 0) {
-  display: flex;
-  flex-direction: $direction;
-  justify-content: $justify;
-  align-items: $align;
-  gap: map-get($spacing, $gap);
-}
-
-@mixin button-variant($variant: 'primary', $size: 'md') {
-  $bg-color: map-get(map-get($colors, $variant), 'base');
-  $color: map-get(map-get($colors, $variant), 'contrast');
-
-  background-color: $bg-color;
-  color: $color;
-  border: none;
-  border-radius: 4px;
-  padding: map-get($spacing, sm) map-get($spacing, md);
-  font-size: map-get(map-get($typography, sizes), base);
-  font-weight: map-get(map-get($typography, weights), medium);
-  cursor: pointer;
-  transition: all 0.2s ease-in-out;
-
-  &:hover {
-    background-color: map-get(map-get($colors, $variant), 'dark');
-    transform: translateY(-1px);
+  h3 {
+    margin: 0 0 1.5rem;
+    color: $primary-color;
+    font-size: 1.25rem;
+    font-weight: 600;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid $accent-color;
   }
 
-  &:active {
-    transform: translateY(0);
-  }
+  .filter-group {
+    margin-bottom: 1.25rem;
 
-  @if $size == 'sm' {
-    padding: map-get($spacing, xs) map-get($spacing, sm);
-    font-size: map-get(map-get($typography, sizes), sm);
-  } @else if $size == 'lg' {
-    padding: map-get($spacing, md) map-get($spacing, lg);
-    font-size: map-get(map-get($typography, sizes), lg);
-  }
-}
-
-@mixin input-base {
-  width: 100%;
-  padding: map-get($spacing, sm);
-  border: 1px solid map-get(map-get($colors, neutral), gray);
-  border-radius: 4px;
-  font-size: map-get(map-get($typography, sizes), base);
-  transition: border-color 0.2s ease-in-out;
-
-  &:focus {
-    outline: none;
-    border-color: map-get(map-get($colors, primary), base);
-    box-shadow: 0 0 0 2px rgba(map-get(map-get($colors, primary), base), 0.1);
-  }
-
-  &::placeholder {
-    color: map-get(map-get($colors, neutral), gray-dark);
-  }
-}
-
-#content {
-  padding: map-get($spacing, lg);
-  background-color: map-get(map-get($colors, secondary), base);
-  color: map-get(map-get($colors, neutral), black);
-
-  .search-container {
-    @include flex(column, flex-start, stretch, md);
-    background-color: map-get(map-get($colors, secondary), light);
-    padding: map-get($spacing, lg);
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-
-    h3 {
-      font-size: map-get(map-get($typography, sizes), lg);
-      color: map-get(map-get($colors, primary), dark);
-      margin-bottom: map-get($spacing, md);
+    label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+      color: $text-color;
+      font-size: 0.875rem;
     }
 
-    .filter-group {
-      @include flex(row, flex-start, center, sm);
-      flex-wrap: wrap;
-
-      label {
-        font-weight: map-get(map-get($typography, weights), medium);
-        min-width: 100px;
-      }
-
-      .search-select,
-      .search-input {
-        @include input-base;
-      }
-
-      .search-input {
-        flex: 1;
-        min-width: 200px;
-      }
-
-      .remove-filter-button {
-        @include button-variant('status', 'sm');
-        background-color: map-get(map-get($colors, status), error);
-      }
-    }
-
-    .add-filter-button {
-      @include button-variant('primary', 'sm');
-      align-self: flex-start;
-    }
-  }
-
-  .accessibility-buttons,
-  .toggle-visibility-button {
-    @include flex(row, center, center, sm);
-
-    button {
-      @include button-variant('primary', 'sm');
-      margin-right: map-get($spacing, sm);
-    }
-  }
-
-  .sort-container,
-  .field-selection {
-    @include flex(column, flex-start, stretch, sm);
-    margin-top: map-get($spacing, md);
-
-    .styled-select {
-      @include input-base;
-      margin-bottom: map-get($spacing, sm);
-    }
-  }
-
-  .product-list {
-    list-style: none;
-    padding: 0;
-    margin: map-get($spacing, lg) 0;
-
-    .product-item {
-      background-color: map-get(map-get($colors, neutral), white);
-      border: 1px solid map-get(map-get($colors, neutral), gray);
+    input,
+    select {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid #e2e8f0;
       border-radius: 8px;
-      padding: map-get($spacing, lg);
-      margin-bottom: map-get($spacing, md);
-      transition: transform 0.2s ease-in-out;
+      background: white;
+      font-size: 0.875rem;
+      transition: all 0.3s ease;
+
+      &:focus {
+        outline: none;
+        border-color: $accent-color;
+        box-shadow: 0 0 0 3px rgba(52,152,219,0.1);
+      }
+    }
+
+    select {
+      appearance: none;
+      background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+      background-repeat: no-repeat;
+      background-position: right 0.75rem center;
+      background-size: 1em;
+    }
+  }
+
+  .filter-row {
+    display: flex;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+
+    > div {
+      flex: 1;
+    }
+
+    @media (max-width: 768px) {
+      flex-direction: column;
+      gap: 1rem;
+    }
+  }
+
+  .range-inputs,
+  .date-range {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+
+    input {
+      flex: 1;
+      min-width: 120px;
+    }
+
+    span {
+      color: #718096;
+      font-size: 0.875rem;
+      white-space: nowrap;
+    }
+  }
+
+  .filter-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 1.5rem;
+
+    .reset-button {
+      background: $background;
+      color: $error-color;
+      padding: 0.625rem 1.25rem;
+      border: 1px solid $error-color;
+      border-radius: 8px;
+      font-weight: 500;
+      transition: all 0.3s ease;
 
       &:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        background: #fff5f5;
+        transform: translateY(-1px);
       }
 
-      h3 {
-        font-size: map-get(map-get($typography, sizes), lg);
-        color: map-get(map-get($colors, primary), base);
-        margin-bottom: map-get($spacing, md);
-      }
-
-      .action-buttons {
-        @include flex(row, flex-start, center, sm);
-        margin-top: map-get($spacing, md);
-
-        button {
-          &.edit-button {
-            @include button-variant('status', 'sm');
-            background-color: map-get(map-get($colors, status), success);
-          }
-
-          &.delete-button {
-            @include button-variant('status', 'sm');
-            background-color: map-get(map-get($colors, status), error);
-          }
-        }
+      &:active {
+        transform: translateY(0);
       }
     }
   }
+}
 
-  .pagination {
-    @include flex(row, center, center, sm);
-    margin-top: map-get($spacing, xl);
+.accessibility-buttons {
+  position: fixed;
+  top: 70px;
+  right: 20px;
+  z-index: 999;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: rgba(255,255,255,0.9);
+  padding: 10px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(0,0,0,0.1);
+
+  button {
+    width: 40px;
+    height: 40px;
+    border: none;
+    border-radius: 8px;
+    background: $accent-color;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+
+    &:hover {
+      background: darken($accent-color,5%);
+      transform: translateY(-2px);
+      box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
+
+    &:focus {
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(52,152,219,0.3);
+    }
+  }
+
+  @media (max-width: 768px) {
+    flex-direction: row;
+    top: 60px;
+    right: 10px;
+    padding: 8px;
 
     button {
-      @include button-variant('primary', 'sm');
-      min-width: 40px;
-      height: 40px;
-
-      &.active {
-        background-color: map-get(map-get($colors, primary), dark);
-        font-weight: map-get(map-get($typography, weights), bold);
-      }
+      width: 36px;
+      height: 36px;
+      font-size: 14px;
     }
+  }
+}
+
+.toggle-visibility-button {
+  background: #01ab4d;
+  color: white;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s;
+
+  &.active {
+    background: #008d3b;
+  }
+
+  &:hover {
+    background: #219a52;
   }
 }
 
 .selection-container {
-  border: 1px solid map-get(map-get($colors, neutral), gray);
-  padding: map-get($spacing, md);
+  background: #f8f9fa;
+  padding: 1.5rem;
   border-radius: 8px;
-  margin-top: map-get($spacing, sm);
-  background-color: map-get(map-get($colors, secondary), light);
-  @include flex(column, flex-start, stretch, md);
-}
+  margin-bottom: 2rem;
 
-.toggle-visibility-button {
-  @include button-variant('primary', 'md');
-  transition: background-color 0.3s ease, transform 0.2s ease;
+  .sort-container {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
 
-  &:hover {
-    background-color: map-get(map-get($colors, primary), dark);
-    transform: translateY(-2px);
-  }
+    select {
+      padding: 0.5rem;
+      border-radius: 4px;
+      border: 1px solid #ddd;
+    }
 
-  &:active {
-    transform: translateY(0);
-  }
-
-  &.active {
-    background-color: map-get(map-get($colors, status), success);
-  }
-}
-
-.sort-container {
-  @include flex(row, flex-start, center, sm);
-
-  label {
-    font-weight: map-get(map-get($typography, weights), medium);
-    color: map-get(map-get($colors, neutral), black);
-  }
-
-  .styled-select {
-    @include input-base;
-  }
-
-  .sort-direction-button {
-    @include button-variant('status', 'sm');
-    background-color: map-get(map-get($colors, status), success);
+    button {
+      background: #206da1;
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+      cursor: pointer;
+    }
   }
 }
 
 .field-selection {
-  @include flex(column, flex-start, stretch, sm);
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
 
-  .toggle-fields-button {
-    @include button-variant('status', 'sm');
-    background-color: map-get(map-get($colors, status), warning);
-    color: map-get(map-get($colors, neutral), black);
+  button {
+    grid-column: 1 / -1;
+    width: fit-content;
+    background: #11b2c0;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
   }
 
-  .field-checkbox {
-    @include flex(row, flex-start, center, sm);
+  .field-option {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 
     input[type="checkbox"] {
-      cursor: pointer;
-      width: 1rem;
-      height: 1rem;
-
-      &:checked {
-        background-color: map-get(map-get($colors, primary), base);
-        border-color: map-get(map-get($colors, primary), base);
-      }
-    }
-
-    label {
-      font-size: map-get(map-get($typography, sizes), base);
-      color: map-get(map-get($colors, neutral), black);
-      cursor: pointer;
+      margin: 0;
     }
   }
 }
 
-@each $breakpoint, $value in $breakpoints {
-  @media (max-width: $value) {
-    #content {
-      padding: map-get($spacing, md);
+.product-list-container {
+  margin-top: 2rem;
 
-      .filter-group {
-        flex-direction: column;
-        align-items: stretch;
+  .product-list {
+    list-style: none;
+    padding: 0;
+    display: grid;
+    gap: 1.5rem;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  }
 
-        label {
-          margin-bottom: map-get($spacing, xs);
-        }
+  .product-item {
+    background: #fafafa;
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    position: relative;
 
-        .search-input,
-        .search-select {
-          width: 100%;
-          margin-bottom: map-get($spacing, xs);
-        }
-      }
+    h3 {
+      margin-top: 0;
+      color: $primary-color;
+    }
 
-      .product-item {
-        padding: map-get($spacing, md);
+    div {
+      margin: 0.5rem 0;
+      color: #000;
+    }
+  }
+}
+
+.action-buttons {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1rem;
+
+  button {
+    border: none;
+    padding: 0.5rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: opacity 0.3s;
+
+    &:hover {
+      opacity: 0.8;
+    }
+
+    &.edit-button { background: #fffb00; }
+    &.alter-button { background: #ff6d00; }
+    &.delete-button { background: $error-color; }
+  }
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 2rem;
+
+  button {
+    padding: 0.5rem 1rem;
+    border: 1px solid #ddd;
+    background: white;
+    cursor: pointer;
+    border-radius: 4px;
+
+    &.active {
+      background: $accent-color;
+      color: white;
+      border-color: darken($accent-color,10%);
+    }
+
+    &:hover:not(.active) {
+      background: #f8f9fa;
+    }
+  }
+}
+
+.no-products {
+  text-align: center;
+  padding: 2rem;
+  color: #7f8c8d;
+  font-style: italic;
+}
+
+@media (max-width: 768px) {
+  .search-container {
+    padding: 1.25rem;
+
+    .filter-group {
+      margin-bottom: 1rem;
+
+      input,
+      select {
+        padding: 0.625rem;
       }
     }
+
+    .date-range {
+      flex-direction: column;
+
+      input {
+        width: 100%;
+      }
+    }
+  }
+
+  .product-item {
+    width: 100%;
+  }
+
+  .field-selection {
+    grid-template-columns: 1fr;
   }
 }

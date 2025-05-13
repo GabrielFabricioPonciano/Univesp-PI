@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Collections;
 
 /**
  * Filtro de segurança para processar tokens JWT em cada requisição
@@ -29,9 +30,6 @@ public class SecurityFilter extends OncePerRequestFilter {
         this.userRepository = userRepository;
     }
 
-    /**
-     * Processa cada requisição para validar token JWT
-     */
     @Override
     protected void doFilterInternal(
             HttpServletRequest request,
@@ -43,24 +41,19 @@ public class SecurityFilter extends OncePerRequestFilter {
         if (token != null) {
             String email = tokenService.validateToken(token);
             if (email != null) {
-                UserDetails user = userRepository.findByEmail(email)
-                        .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+                // Verifica apenas se o usuário existe, sem carregar roles/permissões
+                userRepository.findByEmail(email).ifPresent(user -> {
+                    // Cria autenticação SEM autoridades (roles)
+                    UsernamePasswordAuthenticationToken authentication =
+                            new UsernamePasswordAuthenticationToken(user, null, Collections.emptyList());
 
-                // Cria autenticação e configura no contexto de segurança
-                UsernamePasswordAuthenticationToken authentication =
-                        new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
-
-                SecurityContextHolder.getContext().setAuthentication(authentication);
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                });
             }
         }
         filterChain.doFilter(request, response);
     }
 
-    /**
-     * Extrai token do header Authorization
-     * @param request Requisição HTTP
-     * @return Token JWT ou null se não existir
-     */
     private String recoverToken(HttpServletRequest request) {
         String authHeader = request.getHeader("Authorization");
         if (authHeader == null) return null;

@@ -1,21 +1,38 @@
-<div class="toolbar">
-  <div class="toolbar-item">
-    <button class="toolbar-button" (click)="toggleSearch()">🔍</button>
+<!-- toolbar.component.html -->
+<nav class="toolbar">
+  <div class="toolbar__actions">
+    <button class="toolbar__button" (click)="toggleSearch()" title="Pesquisa">
+      <span class="toolbar__icon">🔍</span>
+    </button>
+
+    <button class="toolbar__button" (click)="openAddDialog()" title="Adicionar">
+      <span class="toolbar__icon">➕</span>
+    </button>
+
+    <div class="toolbar__divider"></div>
+
+    <a class="toolbar__button" routerLink="/validation" title="Validação">
+      <span class="toolbar__icon">🔺</span>
+    </a>
+
+    <a class="toolbar__button" routerLink="/promotion" title="Promoções">
+      <span class="toolbar__icon">📦</span>
+    </a>
+
+    <a class="toolbar__button" routerLink="/report" title="Relatórios">
+      <span class="toolbar__icon">📉</span>
+    </a>
   </div>
-  <div class="toolbar-item">
-    <button class="toolbar-button" (click)="openAddDialog()">➕</button>
+
+  <div class="toolbar__user">
+    <div class="user-info">
+      <div class="user-info__avatar">
+        {{ userName | slice:0:1 | uppercase }}
+      </div>
+      <span class="user-info__name">{{ userName }}</span>
+    </div>
+    <button class="toolbar__button toolbar__button--logout" (click)="logout()" title="Sair">
+      <span class="toolbar__icon">🚪</span>
+    </button>
   </div>
-  <div class="toolbar-item">
-    <button class="toolbar-button" routerLink="/validation">🔺</button>
-  </div>
-  <div class="toolbar-item">
-    <button class="toolbar-button" routerLink="/promotion">📦</button>
-  </div>
-  <div class="toolbar-item">
-    <button class="toolbar-button" routerLink="/report">📉</button>
-  </div>
-  <div class="user-info">
-    Bem-vindo, {{ userName }}
-    <button class="toolbar-button" (click)="logout()">Logout</button>
-  </div>
-</div>
+</nav>
