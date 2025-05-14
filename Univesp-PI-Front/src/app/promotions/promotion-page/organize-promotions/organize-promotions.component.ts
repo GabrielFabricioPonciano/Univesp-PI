@@ -1,54 +1,88 @@
 import { Component, Inject, OnInit } from '@angular/core';
-import { Promotion, PromotionService } from "../../promotionService";
-import { Product, ProductService } from "../../../products/productService";
-import { FormControl, FormsModule, ReactiveFormsModule } from "@angular/forms";
-import { MAT_DIALOG_DATA, MatDialogRef } from "@angular/material/dialog";
-import {NgForOf, NgIf} from "@angular/common";
-import {PromotionPageComponent} from "../promotion-page.component";
-import {forkJoin} from "rxjs";
+import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { forkJoin } from 'rxjs';
+import { Product, ProductUpdate, Promotion, PromotionRequest } from '../../../shared/shared-models';
+import { ProductService } from '../../../products/productService';
+import { PromotionService } from '../../promotionService';
+import { NgForOf, NgIf } from "@angular/common";
+import { MatCheckbox } from "@angular/material/checkbox";
+import { MatIcon } from "@angular/material/icon";
+import { MatFormField, MatLabel } from "@angular/material/form-field";
+import {MatOption, MatSelect, MatSelectModule} from "@angular/material/select";
+import {MatInputModule} from "@angular/material/input";
 
 @Component({
   selector: 'app-organize-promotions',
+  templateUrl: './organize-promotions.component.html',
   standalone: true,
   imports: [
-    ReactiveFormsModule,
     FormsModule,
+    ReactiveFormsModule,
     NgForOf,
     NgIf,
-    PromotionPageComponent
+    MatCheckbox,
+    MatIcon,
+    MatLabel,
+    MatFormField,
+    MatSelect,
+    MatOption,
+    MatInputModule,
+    MatSelectModule,
   ],
-  templateUrl: './organize-promotions.component.html',
   styleUrls: ['./organize-promotions.component.scss']
 })
 export class OrganizePromotionsDialogComponent implements OnInit {
-  selectedPromotion?: Promotion;
   selectedProducts: Product[] = [];
-  promotions: Promotion[] = [];
   filterControl = new FormControl('');
+  filteredProducts: Product[] = [];
+  errorMessage = '';
+  todayISO = new Date().toISOString().split('T')[0];
 
-  // Controle para exibir ou esconder o formulário de criação de promoção
-  showCreatePromotionForm: boolean = false;
-
-  // Modelo para criar uma nova promoção
-  newPromotion: Promotion = {
-    promotionId: 0,
-    promotionDescription: '',  // Corrigido para "promotionDescription"
+  promotionForm: PromotionRequest = {
+    description: '',
     discountPercentage: 0,
-    startDate: undefined,
-    endDate: undefined,
+    startDate: '',
+    endDate: '',
     status: 'ACTIVE'
   };
 
   constructor(
     public dialogRef: MatDialogRef<OrganizePromotionsDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: { products: Product[] },
+    @Inject(MAT_DIALOG_DATA) public data: {
+      products: Product[],
+      promotion?: Promotion,
+      promotions: Promotion[]
+    },
     private productService: ProductService,
-    private promotionService: PromotionService,
-
-  ) {}
+    private promotionService: PromotionService
+  ) {
+    if (data.promotion) {
+      this.promotionForm = {
+        description: data.promotion.description,
+        discountPercentage: data.promotion.discountPercentage,
+        startDate: this.formatDate(data.promotion.startDate),
+        endDate: this.formatDate(data.promotion.endDate),
+        status: data.promotion.status
+      };
+    }
+  }
 
   ngOnInit(): void {
-    this.loadPromotions();
+    this.filteredProducts = this.data.products;
+    this.filterControl.valueChanges.subscribe(value => {
+      this.filteredProducts = this.data.products.filter(p =>
+        p.productName.toLowerCase().includes((value || '').toLowerCase())
+      );
+    });
+  }
+
+  savePromotion(): void {
+    if (this.data.promotion) {
+      this.updatePromotion();
+    } else {
+      this.createPromotion();
+    }
   }
 
   isProductSelected(product: Product): boolean {
@@ -57,82 +91,67 @@ export class OrganizePromotionsDialogComponent implements OnInit {
 
   toggleProductSelection(product: Product): void {
     const index = this.selectedProducts.findIndex(p => p.productId === product.productId);
-
     if (index > -1) {
-      // Produto já está selecionado, remover da lista
       this.selectedProducts.splice(index, 1);
     } else {
-      // Produto não está selecionado, adicionar à lista
       this.selectedProducts.push(product);
     }
   }
 
-  // Carregar promoções existentes
-  loadPromotions(): void {
-    this.promotionService.getPromotions().subscribe(
-      (promotions) => {
-        this.promotions = promotions;
-      },
-      (error) => {
-        console.error('Erro ao carregar promoções', error);
-      }
-    );
-  }
-
-  // Alternar exibição do formulário de criar promoção
-  toggleCreatePromotionForm(): void {
-    this.showCreatePromotionForm = !this.showCreatePromotionForm;
-  }
-
-  // Função para criar uma nova promoção
-  createPromotion(): void {
-    const today = new Date();
-    const startDate = this.newPromotion.startDate ? new Date(this.newPromotion.startDate) : null;
-
-    if (!startDate || startDate < today) {
-      alert('A data de início deve ser no presente ou no futuro.');
-      return;
-    }
-
-    this.promotionService.savePromotion(this.newPromotion).subscribe((createdPromotion) => {
-      this.promotions.push(createdPromotion);  // Atualiza a lista de promoções
-      this.selectedPromotion = createdPromotion; // Seleciona a nova promoção automaticamente
-      this.newPromotion = {                       // Limpa o formulário de criação
-        promotionId: 0,
-        promotionDescription: '',
-        discountPercentage: 0,
-        startDate: undefined,
-        endDate: undefined,
-        status: 'ACTIVE'
+  private applyPromotion(promotionId: number): void {
+    const updates = this.selectedProducts.map(product => {
+      const updateData: ProductUpdate = {
+        productName: product.productName,
+        productType: product.productType,
+        quantity: product.quantity,
+        batchNumber: product.batchNumber,
+        description: product.description,
+        expirationDate: product.expirationDate instanceof Date ?
+          product.expirationDate.toISOString().split('T')[0] :
+          product.expirationDate,
+        profitMargin: product.profitMargin,
+        batchPrice: product.batchPrice,
+        status: product.status,
+        promotionId: promotionId
       };
-      this.showCreatePromotionForm = false;       // Fecha o formulário de criação
+      return this.productService.updateProduct(updateData, product.productId);
+    });
+
+    forkJoin(updates).subscribe({
+      next: () => this.dialogRef.close(true),
+      error: (err) => this.showError('Erro ao aplicar promoção: ' + err.message)
     });
   }
 
-  // Aplicar promoção aos produtos selecionados
-  applyPromotion(): void {
-    if (this.selectedPromotion && this.selectedProducts.length) {
-      let updateObservables = this.selectedProducts.map(product => {
-        product.promotionId = this.selectedPromotion?.promotionId; // Alterado para promotionId
-        return this.productService.updateProduct(product, product.productId);
-      });
-
-      forkJoin(updateObservables).subscribe(() => {
-        this.dialogRef.close(true);
-      });
-    }
+  private createPromotion(): void {
+    this.promotionService.createPromotion(this.promotionForm).subscribe({
+      next: (promo) => this.applyPromotion(promo.id),
+      error: (err) => this.showError('Erro ao criar promoção: ' + err.message)
+    });
   }
 
+  private updatePromotion(): void {
+    if (!this.data.promotion) return;
 
+    this.promotionService.updatePromotion(
+      this.data.promotion.id,
+      this.promotionForm
+    ).subscribe({
+      next: () => this.applyPromotion(this.data.promotion!.id),
+      error: (err) => this.showError('Erro ao atualizar promoção: ' + err.message)
+    });
+  }
 
-  // Cancela a ação e fecha o diálogo
+  private formatDate(date: Date): string {
+    return date.toISOString().split('T')[0];
+  }
+
+  private showError(message: string): void {
+    this.errorMessage = message;
+    setTimeout(() => this.errorMessage = '', 5000);
+  }
+
   cancel(): void {
     this.dialogRef.close();
-  }
-
-  // Função para filtrar produtos com base no nome do produto
-  filterProducts(): Product[] {
-    const filter = this.filterControl.value?.toLowerCase() || '';
-    return this.data.products.filter(product => product.productName.toLowerCase().includes(filter));
   }
 }

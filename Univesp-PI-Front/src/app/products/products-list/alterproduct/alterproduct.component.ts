@@ -1,8 +1,9 @@
 import { Component, Inject, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from "@angular/forms";
 import { MAT_DIALOG_DATA, MatDialogRef } from "@angular/material/dialog";
-import {Product, ProductService, ProductUpdate} from "../../productService";
 import {CommonModule} from "@angular/common";
+import {Product, ProductUpdate} from "../../../shared/shared-models";
+import {ProductService} from "../../productService";
 
 @Component({
   selector: 'app-alterproduct',
@@ -61,7 +62,7 @@ export class AlterProductComponent implements OnInit {
         finalPrice,
         createdAt,
         updatedAt,
-        showActions,
+        // Remover showActions
         ...productData
       } = this.data;
 
@@ -73,9 +74,13 @@ export class AlterProductComponent implements OnInit {
       const payload: ProductUpdate = {
         ...productData,
         quantity: this.finalQuantity,
-        expirationDate, // Passa o valor formatado
+        expirationDate: productData.expirationDate ?
+          (typeof productData.expirationDate === 'string' ?
+            productData.expirationDate :
+            productData.expirationDate.toISOString().split('T')[0]) :
+          undefined,
         promotionId: productData.promotionId || null,
-        status: productData.status as 'ACTIVE' | 'INACTIVE' | 'DISCONTINUED' // Conversão de tipo
+        status: productData.status
       };
 
       this.productService.updateProduct(payload, this.data.productId).subscribe({

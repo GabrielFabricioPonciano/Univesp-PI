@@ -55,8 +55,8 @@
       <label for="promotionId">Promoção:</label>
       <select id="promotionId" formControlName="promotionId">
         <option [ngValue]="null">Nenhuma</option>
-        <option *ngFor="let promo of promotions" [value]="promo.promotionId">
-          {{ promo.promotionDescription }}
+        <option *ngFor="let promo of promotions" [value]="promo.id"> <!-- Alterado para promo.id -->
+          {{ promo.description }} <!-- Alterado para description -->
         </option>
       </select>
     </div>

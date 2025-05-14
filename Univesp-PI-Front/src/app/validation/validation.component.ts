@@ -1,8 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ProductService, Product } from '../products/productService';
 import { FormControl, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import {Product} from "../shared/shared-models";
+import {ProductService} from "../products/productService";
 
 interface ProductWithExpiration extends Product {
   daysUntilExpiration: number;

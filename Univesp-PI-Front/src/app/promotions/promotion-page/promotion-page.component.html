@@ -1,38 +1,98 @@
-<div class="product-management">
-  <a routerLink="/product" class="back-button">⬅ Voltar para o Visualização De Produtos</a>
-  <h1>Gerenciamento de Produtos e Promoções</h1>
+<div class="promotion-management">
+  <header class="header">
+    <a routerLink="/product" class="back-button">
+      <mat-icon>arrow_back</mat-icon>
+      Voltar para Produtos
+    </a>
+    <h1>Gestão de Promoções</h1>
+    <button mat-raised-button color="primary" (click)="openPromotionDialog()">
+      <mat-icon>add</mat-icon>
+      Nova Promoção
+    </button>
+  </header>
 
-  <!-- Botões para criar e organizar promoções -->
-  <div class="action-buttons">
-    <button (click)="openOrganizePromotionsDialog()">Organizar Promoções</button>
-  </div>
+  <main class="content">
+    <section class="promotion-list">
+      <h2>Promoções Ativas</h2>
+      <div class="grid-container">
+        <div *ngFor="let promo of promotions" class="promotion-card">
+          <div class="card-header">
+            <h3>{{ promo.description }}</h3>
+            <span class="discount-badge">{{ promo.discountPercentage }}% OFF</span>
+          </div>
 
-  <!-- Lista de Produtos com Promoção -->
-  <div *ngIf="loading" class="loading-spinner">
-    Carregando...
-  </div>
+          <div class="card-dates">
+            <div class="date-item">
+              <mat-icon>event_available</mat-icon>
+              {{ promo.startDate | date: 'dd/MM/yyyy' }}
+            </div>
+            <div class="date-item">
+              <mat-icon>event_busy</mat-icon>
+              {{ promo.endDate | date: 'dd/MM/yyyy' }}
+            </div>
+          </div>
 
-  <!-- Lista de Produtos com Promoção -->
-  <h2>Produtos com Promoção</h2>
-  <div *ngFor="let product of productsWithPromotion" class="product-card">
-    <h3>{{ product.productName }} ({{ product.productType }})</h3>
-    <!-- Alterado para usar promotionId e buscar detalhes da promoção -->
-    <p><strong>Promoção:</strong>
-      {{ getPromotionById(product.promotionId)?.promotionDescription }}
-      ({{ getPromotionById(product.promotionId)?.discountPercentage }}% OFF)
-    </p>
-    <p><strong>Válido até:</strong>
-      {{ getPromotionById(product.promotionId)?.endDate | date: 'dd/MM/yyyy' }}
-    </p>
+          <div class="card-actions">
+            <button mat-icon-button (click)="openPromotionDialog(promo)">
+              <mat-icon>edit</mat-icon>
+            </button>
+            <button mat-icon-button color="warn" (click)="confirmDelete(promo.id)">
+              <mat-icon>delete</mat-icon>
+            </button>
+            <span class="status" [ngClass]="promo.status.toLowerCase()">
+              {{ promo.status }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </section>
 
-    <button (click)="removePromotion(product)" class="remove-promotion-btn">Remover Promoção</button>
-  </div>
+    <div class="product-sections">
+      <section class="products-with-promotion">
+        <h2>Produtos em Promoção ({{ filteredProducts.withPromotion.length }})</h2>
+        <div class="product-grid">
+          <div *ngFor="let product of filteredProducts.withPromotion" class="product-card">
+            <div class="product-header">
+              <h3>{{ product.productName }}</h3>
+              <span class="product-type">{{ product.productType }}</span>
+            </div>
 
-  <!-- Lista de Produtos sem Promoção -->
-  <h2>Produtos sem Promoção</h2>
-  <div *ngFor="let product of productsWithoutPromotion" class="product-card">
-    <h3>{{ product.productName }} ({{ product.productType }})</h3>
-    <p><strong>Quantidade:</strong> {{ product.quantity }}</p>
-    <p><strong>Descrição:</strong> {{ product.description }}</p>
-  </div>
+            <div class="product-details">
+              <p><mat-icon>local_offer</mat-icon> {{ product.finalPrice | currency }}</p>
+              <p><mat-icon>inventory</mat-icon> {{ product.quantity }} unidades</p>
+              <p *ngIf="product.expirationDate">
+                <mat-icon>event</mat-icon>
+                {{ product.expirationDate | date: 'dd/MM/yyyy' }}
+              </p>
+            </div>
+
+            <button mat-stroked-button color="warn" (click)="removePromotionFromProduct(product)">
+              Remover Promoção
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section class="products-without-promotion">
+        <h2>Produtos Sem Promoção ({{ filteredProducts.withoutPromotion.length }})</h2>
+        <div class="product-grid">
+          <div *ngFor="let product of filteredProducts.withoutPromotion" class="product-card inactive">
+            <div class="product-header">
+              <h3>{{ product.productName }}</h3>
+              <span class="product-type">{{ product.productType }}</span>
+            </div>
+
+            <div class="product-details">
+              <p><mat-icon>sell</mat-icon> {{ product.finalPrice | currency }}</p>
+              <p><mat-icon>warehouse</mat-icon> {{ product.quantity }} em estoque</p>
+            </div>
+
+            <button mat-stroked-button disabled>
+              Sem promoção
+            </button>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
 </div>

@@ -1,5 +1,4 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { ProductService, Product } from '../productService';
 import { FormControl, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
@@ -9,6 +8,8 @@ import { ToolbarComponent } from '../../toolbar/toolbar.component';
 import { ProductFormComponent } from '../product-form/product-form.component';
 import { AlterProductComponent } from './alterproduct/alterproduct.component';
 import { Subject, debounceTime, distinctUntilChanged, takeUntil } from 'rxjs';
+import {Product} from "../../shared/shared-models";
+import {ProductService} from "../productService";
 
 @Component({
   selector: 'app-product-list',

@@ -1,8 +1,9 @@
 import { Component } from '@angular/core';
 import {FormBuilder, FormGroup, ReactiveFormsModule} from "@angular/forms";
-import {Product, ProductService} from "../products/productService";
 import {NgForOf, NgIf} from "@angular/common";
 import {RouterLink} from "@angular/router";
+import {Product} from "../shared/shared-models";
+import {ProductService} from "../products/productService";
 
 @Component({
   selector: 'app-relatorio',

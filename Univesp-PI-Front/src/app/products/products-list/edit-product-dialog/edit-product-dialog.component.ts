@@ -7,8 +7,9 @@ import {
 } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { DecimalPipe, NgForOf, NgIf } from '@angular/common';
-import {Product, ProductService, ProductUpdate, Promotion} from '../../productService';
 import { PromotionService } from '../../../promotions/promotionService';
+import {Product, ProductUpdate, Promotion} from "../../../shared/shared-models";
+import {ProductService} from "../../productService";
 
 @Component({
   selector: 'app-edit-product-dialog',

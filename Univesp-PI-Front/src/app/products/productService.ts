@@ -2,52 +2,12 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
 import { Observable, Subject, throwError } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
+import { Product, ProductUpdate, Promotion } from '../shared/shared-models';
 
-export interface Promotion {
-  promotionId: number;
-  promotionDescription?: string;
-  discountPercentage?: number;
-  startDate?: Date;
-  endDate?: Date;
-  status?: 'ACTIVE' | 'INACTIVE';
-}
-
-export interface Product {
-  productId: number;
-  productName: string;
-  productType: string;
-  quantity: number;
-  batchNumber: string;
-  description: string;
-  expirationDate?: string | Date;
-  profitMargin: number;
-  batchPrice: number;
-  unitPrice: number;
-  finalPrice: number;
-  createdAt?: Date;
-  updatedAt?: Date;
-  status: 'ACTIVE' | 'INACTIVE' | 'DISCONTINUED';
-  promotionId?: number;
-  showActions?: boolean;
-}
-export interface ProductUpdate {
-  productName: string;
-  productType: string;
-  quantity: number;
-  batchNumber: string;
-  description: string;
-  expirationDate?: string | Date; // Adicionado operador de opcional
-  profitMargin: number;
-  batchPrice: number;
-  status: 'ACTIVE' | 'INACTIVE' | 'DISCONTINUED';
-  promotionId?: number | null;
-}
-@Injectable({
-  providedIn: 'root',
-})
+@Injectable({ providedIn: 'root' })
 export class ProductService {
-  private apiUrl = 'http://localhost:8080/products'; // URL da API
-  private productListUpdated = new Subject<void>(); // Sujeito para atualizar a lista
+  private apiUrl = 'http://localhost:8080/products';
+  private productListUpdated = new Subject<void>();
 
   constructor(private http: HttpClient) {}
 
@@ -87,12 +47,13 @@ export class ProductService {
 
   // Cria um novo produto
   saveProduct(product: Product): Observable<Product> {
-    this.formatDate(product); // Formata datas antes de enviar
-    return this.http.post<Product>(this.apiUrl, product, { headers: this.getHeaders() }).pipe(
-      tap(() => this.refreshProductList()), // Notifica sobre atualização de lista
+    const formattedProduct = this.formatDate(product);
+    return this.http.post<Product>(this.apiUrl, formattedProduct, { headers: this.getHeaders() }).pipe(
+      tap(() => this.refreshProductList()),
       catchError(this.handleError)
     );
   }
+
 
   // Deleta um produto
   deleteProduct(id: number): Observable<void> {
@@ -127,10 +88,14 @@ export class ProductService {
   }
 
   // Formata datas para o formato ISO antes de enviar ao backend
-  private formatDate(product: Product): void {
-    if (product.expirationDate instanceof Date) {
-      product.expirationDate = product.expirationDate.toISOString().split('T')[0];
+  private formatDate(product: Product): Product {
+    const formattedProduct = { ...product };
+
+    if (formattedProduct.expirationDate instanceof Date) {
+      formattedProduct.expirationDate = formattedProduct.expirationDate.toISOString().split('T')[0];
     }
+
+    return formattedProduct;
   }
 
   // Notifica os assinantes quando a lista de produtos for atualizada

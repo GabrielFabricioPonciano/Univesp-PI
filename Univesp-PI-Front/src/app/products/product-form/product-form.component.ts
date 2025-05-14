@@ -7,9 +7,10 @@ import {
   AbstractControl,
   ReactiveFormsModule
 } from '@angular/forms';
-import { ProductService, Product } from '../productService';
 import { MatDialogRef } from '@angular/material/dialog';
 import { DecimalPipe, NgIf } from "@angular/common";
+import {ProductService} from "../productService";
+import {Product} from "../../shared/shared-models";
 
 @Component({
   selector: 'app-product-form',

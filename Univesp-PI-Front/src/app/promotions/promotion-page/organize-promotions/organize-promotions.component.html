@@ -1,91 +1,84 @@
-<div class="promotion-form-container">
-  <h1>Organizar Promoções</h1>
-
-  <!-- Seção para selecionar uma promoção existente -->
-  <div class="form-group">
-    <label for="promotion">Selecione uma Promoção:</label>
-    <select id="promotion" [(ngModel)]="selectedPromotion">
-      <option *ngFor="let promotion of promotions" [ngValue]="promotion">
-        {{ promotion.promotionDescription }}
-      </option>
-    </select>
-  </div>
-
-  <!-- Botão para alternar exibição do formulário de criar promoção -->
-  <button class="toggle-button" (click)="toggleCreatePromotionForm()">
-    {{ showCreatePromotionForm ? 'Fechar Formulário de Nova Promoção' : 'Criar Nova Promoção' }}
-  </button>
-
-  <!-- Formulário para criar uma nova promoção -->
-  <div *ngIf="showCreatePromotionForm" class="create-promotion-form">
-    <h2>Criar Nova Promoção</h2>
-
-    <div class="form-group">
-      <label for="description">Descrição da Promoção:</label>
-      <input
-        id="description"
-        [(ngModel)]="newPromotion.promotionDescription"
-        placeholder="Descrição da promoção"
-      />
-    </div>
-
-    <div class="form-group">
-      <label for="discount">Desconto (%):</label>
-      <input
-        id="discount"
-        type="number"
-        [(ngModel)]="newPromotion.discountPercentage"
-        placeholder="Porcentagem de desconto"
-      />
-    </div>
-
-    <div class="form-group">
-      <label for="startDate">Data de Início:</label>
-      <input id="startDate" type="date" [(ngModel)]="newPromotion.startDate" />
-    </div>
-
-    <div class="form-group">
-      <label for="endDate">Data de Término:</label>
-      <input id="endDate" type="date" [(ngModel)]="newPromotion.endDate" />
-    </div>
-
-    <div class="form-group">
-      <label for="status">Status:</label>
-      <select id="status" [(ngModel)]="newPromotion.status">
-        <option value="ACTIVE">Ativa</option>
-        <option value="INACTIVE">Inativa</option>
-      </select>
-    </div>
-
-    <button class="save-button" (click)="createPromotion()">Salvar Nova Promoção</button>
-  </div>
-
-  <!-- Filtro de produtos -->
-  <h2>Selecione os Produtos:</h2>
-  <div class="form-group">
-    <input [formControl]="filterControl" placeholder="Filtrar produtos..." />
-  </div>
-
-  <!-- Lista de produtos com checkbox -->
-  <div class="product-selection-list">
-    <div class="product-item" *ngFor="let product of filterProducts()">
-      <div class="product-item-content">
-        <input
-          type="checkbox"
-          [checked]="isProductSelected(product)"
-          (change)="toggleProductSelection(product)"
-        />
-        <span>{{ product.productName }}</span>
-      </div>
-    </div>
-  </div>
-
-
-  <!-- Botões de ação -->
-  <div class="action-buttons">
-    <button (click)="applyPromotion()" [disabled]="!selectedPromotion || !selectedProducts.length">
-      Aplicar Promoção
+<div class="promotion-editor">
+  <div class="editor-header">
+    <h1>{{ data.promotion ? 'Editar Promoção' : 'Nova Promoção' }}</h1>
+    <button mat-icon-button (click)="cancel()">
+      <mat-icon>close</mat-icon>
     </button>
-    <button class="close-button" (click)="cancel()">Cancelar</button>
+  </div>
+
+  <div class="editor-content">
+    <form class="promotion-form" #form="ngForm">
+      <div class="form-section">
+        <mat-form-field appearance="outline">
+          <mat-label>Descrição</mat-label>
+          <input matInput [(ngModel)]="promotionForm.description" name="description" required>
+        </mat-form-field>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline">
+            <mat-label>Desconto (%)</mat-label>
+            <input matInput type="number" [(ngModel)]="promotionForm.discountPercentage"
+                   name="discount" min="1" max="100" required>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Status</mat-label>
+            <mat-select [(ngModel)]="promotionForm.status" name="status" required>
+              <mat-option value="ACTIVE">Ativa</mat-option>
+              <mat-option value="INACTIVE">Inativa</mat-option>
+              <mat-option value="EXPIRED">Expirada</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline">
+            <mat-label>Data de Início</mat-label>
+            <input matInput type="date" [(ngModel)]="promotionForm.startDate"
+                   [min]="todayISO" name="startDate" required>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Data de Término</mat-label>
+            <input matInput type="date" [(ngModel)]="promotionForm.endDate"
+                   [min]="promotionForm.startDate || todayISO" name="endDate" required>
+          </mat-form-field>
+        </div>
+      </div>
+
+      <div class="product-selection">
+        <div class="selection-header">
+          <h2>Selecionar Produtos ({{ selectedProducts.length }})</h2>
+          <mat-form-field appearance="outline" class="search-field">
+            <mat-label>Pesquisar produtos</mat-label>
+            <input matInput [formControl]="filterControl">
+            <mat-icon matSuffix>search</mat-icon>
+          </mat-form-field>
+        </div>
+
+        <div class="product-grid">
+          <div *ngFor="let product of filteredProducts"
+               class="product-item"
+               [class.selected]="isProductSelected(product)"
+               (click)="toggleProductSelection(product)">
+            <mat-checkbox [checked]="isProductSelected(product)"></mat-checkbox>
+            <div class="product-info">
+              <h3>{{ product.productName }}</h3>
+              <p>{{ product.productType }}</p>
+              <p class="stock">Estoque: {{ product.quantity }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <div class="editor-actions">
+    <button mat-button (click)="cancel()">Cancelar</button>
+    <button mat-raised-button color="primary"
+            (click)="savePromotion()"
+            [disabled]="!form.valid || selectedProducts.length === 0">
+      {{ data.promotion ? 'Salvar Alterações' : 'Criar Promoção' }}
+    </button>
   </div>
 </div>
