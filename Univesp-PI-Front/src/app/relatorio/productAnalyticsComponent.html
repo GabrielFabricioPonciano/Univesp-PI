@@ -1,37 +1,129 @@
-<div class="report-container">
-  <a routerLink="/product" class="back-button">
-    ⬅ Voltar para o Index
-  </a>
-  <h2>Relatório de Estoque Crítico</h2>
-  <form [formGroup]="criticalStockForm" (ngSubmit)="generateReport()">
-    <label for="threshold">Estoque mínimo:</label>
-    <input id="threshold" formControlName="threshold" type="number" />
-    <button type="submit">Gerar Relatório</button>
-  </form>
+<div class="analytics-container">
+  <div class="dashboard-toolbar">
+    <h1>Dashboard de Análise de Produtos</h1>
 
-  <div *ngIf="errorMessage" class="error-message">
-    {{ errorMessage }}
+    <div class="filter-controls">
+      <mat-form-field>
+        <mat-label>Categoria</mat-label>
+        <mat-select [(value)]="selectedCategory" (selectionChange)="applyFilters()">
+          <mat-option value="all">Todas as Categorias</mat-option>
+          <mat-option *ngFor="let category of productCategories" [value]="category">
+            {{ category || 'Sem Categoria' }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field>
+        <mat-label>Período</mat-label>
+        <mat-select [(value)]="timeFilter" (selectionChange)="applyFilters()">
+          <mat-option value="7days">Últimos 7 dias</mat-option>
+          <mat-option value="30days">Últimos 30 dias</mat-option>
+          <mat-option value="all">Todo o período</mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
   </div>
 
-  <div *ngIf="criticalStockProducts.length > 0">
-    <h3>Produtos com Estoque Crítico</h3>
-    <table>
-      <thead>
-      <tr>
-        <th>ID</th>
-        <th>Nome</th>
-        <th>Quantidade</th>
-        <th>Tipo</th>
-      </tr>
-      </thead>
-      <tbody>
-      <tr *ngFor="let product of criticalStockProducts">
-        <td>{{ product.productId }}</td>
-        <td>{{ product.productName }}</td>
-        <td>{{ product.quantity }}</td>
-        <td>{{ product.productType }}</td>
-      </tr>
-      </tbody>
-    </table>
-  </div>
+  @if (isLoading) {
+    <div class="loading-overlay">
+      <mat-spinner diameter="50"></mat-spinner>
+      <p>Carregando dados analíticos...</p>
+    </div>
+  } @else {
+    <div class="dashboard-content">
+      <!-- Métricas Principais -->
+      <div class="metrics-grid">
+        <mat-card class="metric-card">
+          <div class="metric-value">{{ keyMetrics.totalProducts }}</div>
+          <div class="metric-label">Produtos Filtrados</div>
+        </mat-card>
+
+        <mat-card class="metric-card accent">
+          <div class="metric-value">{{ keyMetrics.lowStock }}</div>
+          <div class="metric-label">Estoque Baixo</div>
+        </mat-card>
+
+        <mat-card class="metric-card warn">
+          <div class="metric-value">{{ keyMetrics.avgMargin | number:'1.1-1' }}%</div>
+          <div class="metric-label">Margem Média</div>
+        </mat-card>
+      </div>
+
+      <!-- Gráficos -->
+      <div class="charts-grid">
+        <mat-card class="chart-card">
+          <h2>Distribuição por Categoria</h2>
+          <div class="chart-container">
+            <canvas #categoryChart id="categoryChart"></canvas>
+          </div>
+        </mat-card>
+
+        <mat-card class="chart-card">
+          <h2>Análise de Estoque</h2>
+          <div class="chart-container">
+            <canvas #stockChart id="stockChart"></canvas>
+          </div>
+        </mat-card>
+
+        <mat-card class="chart-card">
+          <h2>Evolução de Margens</h2>
+          <div class="chart-container">
+            <canvas #marginChart id="marginChart"></canvas>
+          </div>
+        </mat-card>
+      </div>
+
+      <!-- Seção de Promoções -->
+      <mat-card class="promotions-section">
+        <h2>Promoções Ativas ({{ promotions.length }})</h2>
+        <div class="promotions-list">
+          @for (promo of promotions; track promo.id) {
+            <div class="promotion-item">
+              <div class="promotion-header">
+                <span class="color-indicator" [style.background]="generateColors(1)[0]"></span>
+                <div class="promotion-info">
+                  <h3>{{ promo.description }}</h3>
+                  <span class="discount">{{ promo.discountPercentage }}% OFF</span>
+                </div>
+              </div>
+              <div class="promotion-dates">
+                {{ promo.startDate | date:'dd/MM/yyyy' }} - {{ promo.endDate | date:'dd/MM/yyyy' }}
+              </div>
+            </div>
+          }
+          @empty {
+            <div class="no-promotions">
+              Nenhuma promoção ativa no momento
+            </div>
+          }
+        </div>
+      </mat-card>
+
+      <!-- Tabela de Estoque Crítico -->
+      <mat-card class="critical-stock">
+        <h2>Produtos com Estoque Crítico ({{ keyMetrics.lowStock }})</h2>
+        <table mat-table [dataSource]="getCriticalStock()">
+          <ng-container matColumnDef="productName">
+            <th mat-header-cell *matHeaderCellDef>Produto</th>
+            <td mat-cell *matCellDef="let product">{{ product.productName }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="quantity">
+            <th mat-header-cell *matHeaderCellDef>Estoque</th>
+            <td mat-cell *matCellDef="let product">{{ product.quantity }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="expiration">
+            <th mat-header-cell *matHeaderCellDef>Validade</th>
+            <td mat-cell *matCellDef="let product">
+              {{ product.expirationDate ? (product.expirationDate | date:'dd/MM/yyyy') : 'N/A' }}
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="['productName', 'quantity', 'expiration']"></tr>
+          <tr mat-row *matRowDef="let row; columns: ['productName', 'quantity', 'expiration']"></tr>
+        </table>
+      </mat-card>
+    </div>
+  }
 </div>
