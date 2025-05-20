@@ -9,12 +9,12 @@ public record PromotionRequest(
         @Size(max = 255, message = "Máximo 255 caracteres")
         String description,
 
-        @NotNull(message = "Data inicial obrigatória")
-        @FutureOrPresent(message = "Data deve ser presente/futura")
+        @NotNull
+        @FutureOrPresent(message = "Data deve ser presente/futura (UTC)")
         LocalDate startDate,
 
-        @NotNull(message = "Data final obrigatória")
-        @Future(message = "Data deve ser futura")
+        @NotNull
+        @Future(message = "Data deve ser futura (UTC)")
         LocalDate endDate,
 
         @NotNull(message = "Desconto obrigatório")

@@ -39,8 +39,27 @@ public class PromotionService {
         Promotion existing = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Promoção", id));
 
+        // 1. Atualiza os dados da promoção primeiro
         mapper.updateFromRequest(request, existing);
-        return mapper.toResponse(repository.save(existing));
+
+        // 2. Salva a promoção atualizada para garantir que os novos valores estejam disponíveis
+        Promotion updatedPromotion = repository.save(existing);
+
+        // 3. Busca todos os produtos vinculados à promoção
+        List<Product> products = productRepository.findByPromotion(updatedPromotion);
+
+        // 4. Recalcula os preços com os novos valores da promoção
+        products.forEach(product -> {
+            priceCalculator.calculatePrices(product);
+
+            // Atualiza explicitamente a promoção no produto (caso de alteração de status/datas)
+            product.setPromotion(updatedPromotion);
+        });
+
+        // 5. Salva os produtos com os novos preços
+        productRepository.saveAll(products);
+
+        return mapper.toResponse(updatedPromotion);
     }
 
     public void delete(Long id) {

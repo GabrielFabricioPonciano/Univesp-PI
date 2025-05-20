@@ -62,6 +62,7 @@ public class ProductService {
             Promotion promotion = promotionRepository.findById(request.promotionId())
                     .orElseThrow(() -> new ResourceNotFoundException("Promotion", request.promotionId()));
             product.setPromotion(promotion);
+            priceCalculator.calculatePrices(product);
         } else {
             product.setPromotion(null);
         }

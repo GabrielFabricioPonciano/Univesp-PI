@@ -1,5 +1,6 @@
 package com.univesp.projeto_integrador.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.univesp.projeto_integrador.model.Product;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.EnumType;
@@ -7,7 +8,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.validation.constraints.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-
+@JsonIgnoreProperties(ignoreUnknown = true)
 public record ProductRequest(
         @NotBlank @Size(max = 100) String productName,
         @Size(max = 50) String productType,
